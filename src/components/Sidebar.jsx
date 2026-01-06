@@ -5,65 +5,94 @@ import { cn } from '../utils';
 
 import { useProjects } from '../context/ProjectContext'; // Context Import
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const { generateDailyPlan, activeView, setActiveView } = useProjects(); // Use Context
 
+    // Handle navigation click (close sidebar on mobile)
+    const handleNavClick = (view) => {
+        setActiveView(view);
+        if (window.innerWidth < 768) { // Simple mobile check or just always call onClose
+            onClose && onClose();
+        }
+    };
+
+    const handleActionClick = () => {
+        generateDailyPlan();
+        if (window.innerWidth < 768) {
+            onClose && onClose();
+        }
+    };
+
     return (
-        <aside className="w-64 border-r border-white/5 bg-[#0a0a0b] flex flex-col p-4 space-y-8 hidden md:flex fixed h-full z-40">
-            {/* Profile/User Section */}
-            <div className="flex items-center space-x-3 px-2">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 p-[2px]">
-                    <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                        <span className="font-bold text-xs text-white">J1</span>
+        <>
+            {/* Mobile Backdrop */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+                    onClick={onClose}
+                ></div>
+            )}
+
+            {/* Sidebar */}
+            <aside className={cn(
+                "fixed inset-y-0 left-0 z-50 w-64 border-r border-white/5 bg-[#0a0a0b] flex flex-col p-4 space-y-8 transition-transform duration-300 md:translate-x-0 md:static md:h-screen",
+                isOpen ? "translate-x-0 shadow-2xl shadow-cyan-500/20" : "-translate-x-full"
+            )}>
+                {/* Profile/User Section */}
+                <div className="flex items-center space-x-3 px-2">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 p-[2px]">
+                        <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+                            <span className="font-bold text-xs text-white">J1</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 className="text-sm font-bold text-white tracking-wide">jama1</h2>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">Administrator</p>
                     </div>
                 </div>
-                <div>
-                    <h2 className="text-sm font-bold text-white tracking-wide">jama1</h2>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">Administrator</p>
-                </div>
-            </div>
 
-            {/* Navigation */}
-            <nav className="flex-1 space-y-1">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mb-2">Navegación</p>
+                {/* Navigation */}
+                <nav className="flex-1 space-y-1">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mb-2">Navegación</p>
 
-                <NavItem
-                    icon={Home}
-                    label="Overview"
-                    active={activeView === 'overview'}
-                    onClick={() => setActiveView('overview')}
-                />
-                <NavItem
-                    icon={Grid}
-                    label="Proyectos (IA)"
-                    active={activeView === 'projects'}
-                    onClick={() => setActiveView('projects')}
-                />
-                <NavItem
-                    icon={Settings}
-                    label="Configuración"
-                    active={activeView === 'settings'}
-                    onClick={() => setActiveView('settings')}
-                />
+                    <NavItem
+                        icon={Home}
+                        label="Overview"
+                        active={activeView === 'overview'}
+                        onClick={() => handleNavClick('overview')}
+                    />
+                    <NavItem
+                        icon={Grid}
+                        label="Proyectos (IA)"
+                        active={activeView === 'projects'}
+                        onClick={() => handleNavClick('projects')}
+                    />
+                    <NavItem
+                        icon={Settings}
+                        label="Configuración"
+                        active={activeView === 'settings'}
+                        onClick={() => handleNavClick('settings')}
+                    />
 
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mt-6 mb-2">Acción</p>
-                <NavItem icon={CheckSquare} label="Tareas para Hoy" highlight onClick={generateDailyPlan} />
-            </nav>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mt-6 mb-2">Acción</p>
+                    <NavItem icon={CheckSquare} label="Tareas para Hoy" highlight onClick={handleActionClick} />
+                </nav>
 
-            {/* Habits Widget (Mini) */}
-            <div className="bg-[#121214] border border-white/5 rounded-xl p-4">
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase">Hábitos</span>
-                    <span className="text-[10px] font-bold text-cyan-500">66%</span>
-                </div>
-                <div className="space-y-2">
-                    <div className="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
-                        <div className="bg-cyan-500 h-full w-2/3 shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>
+                {/* Habits Widget (Mini) */}
+                <div className="bg-[#121214] border border-white/5 rounded-xl p-4">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase">Hábitos</span>
+                        <span className="text-[10px] font-bold text-cyan-500">66%</span>
                     </div>
-                    <p className="text-[10px] text-gray-400">Progreso Diario</p>
+                    <div className="space-y-2">
+                        <div className="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
+                            <div className="bg-cyan-500 h-full w-2/3 shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>
+                        </div>
+                        <p className="text-[10px] text-gray-400">Progreso Diario</p>
+                    </div>
                 </div>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 };
 
