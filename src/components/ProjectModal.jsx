@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Trash2, Plus, Brain, FileText, Settings } from 'lucide-react';
+import { X, Save, Trash2, Plus, Brain, FileText, Settings, MessageSquare, ArrowRight, Star } from 'lucide-react';
 import { cn } from '../utils';
 
 const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
@@ -15,12 +15,17 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
         aiContext: ''
     });
 
+    const [messages, setMessages] = useState([]);
+    const [input, setInput] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+
     useEffect(() => {
         if (project) {
             setFormData({
                 ...project,
-                aiContext: project.aiContext || '' // Ensure field exists
+                aiContext: project.aiContext || ''
             });
+            setMessages([{ role: 'ai', text: `¡Hola! Soy tu copiloto para "${project.title}". ¿Necesitas ayuda descomponiendo este objetivo en tareas?` }]);
         } else {
             setFormData({
                 title: '',
@@ -32,6 +37,7 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
                 tasks: [],
                 aiContext: 'Eres un experto encargado de este proyecto. Tu objetivo es...'
             });
+            setMessages([{ role: 'ai', text: 'Bienvenido. Vamos a estructurar este nuevo pilar. Cuéntame tu idea y generaré las tareas iniciales.' }]);
         }
     }, [project, isOpen]);
 
@@ -60,6 +66,46 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
         setFormData(prev => ({
             ...prev,
             tasks: prev.tasks.filter(t => t.id !== id)
+        }));
+    };
+
+    const handleSendMessage = async (e) => {
+        if (e) e.preventDefault();
+        if (!input.trim()) return;
+
+        const userMsg = { role: 'user', text: input };
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+        setIsTyping(true);
+
+        // MOCK AI LOGIC (To be replaced by real API)
+        setTimeout(() => {
+            const lowerInput = userMsg.text.toLowerCase();
+            let aiResponse = { role: 'ai', text: '', suggestions: [] };
+
+            if (lowerInput.includes('tarea') || lowerInput.includes('plan') || lowerInput.includes('hacer') || lowerInput.includes('ayuda')) {
+                aiResponse.text = `Analizando el contexto "${formData.category}" y tu objetivo... He detectado estas acciones clave para avanzar:`;
+                aiResponse.suggestions = [
+                    `Investigación de mercado para ${formData.title || 'el proyecto'}`,
+                    "Definir arquitectura inicial",
+                    "Crear prototipo de baja fidelidad",
+                    "Configurar entorno de desarrollo"
+                ];
+            } else if (lowerInput.includes('hola')) {
+                aiResponse.text = `¡Hola! Estoy listo. Tu proyecto tiene una prioridad de ${formData.importance}/10. ¿Quieres que sugiera tareas para aumentar el impacto inmediato?`;
+            } else {
+                aiResponse.text = "Entendido. He procesado esa información. Si necesitas que la convierta en items accionables, solo pídelo.";
+            }
+
+            setMessages(prev => [...prev, aiResponse]);
+            setIsTyping(false);
+        }, 1500);
+    };
+
+    const addSuggestion = (text) => {
+        setFormData(prev => ({
+            ...prev,
+            tasks: [...prev.tasks, { id: Date.now(), text: text, done: false }]
         }));
     };
 
@@ -103,7 +149,17 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
                         )}
                     >
                         <Brain size={14} />
-                        <span>Contexto IA (Capa 2)</span>
+                        <span>Contexto</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('assistant')}
+                        className={cn(
+                            "pb-3 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center space-x-2",
+                            activeTab === 'assistant' ? "text-cyan-400 border-cyan-400" : "text-gray-500 border-transparent hover:text-gray-300"
+                        )}
+                    >
+                        <MessageSquare size={14} />
+                        <span>Asistente IA</span>
                     </button>
                 </div>
 
@@ -229,6 +285,70 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
                                 className="w-full h-64 bg-black/30 border border-white/10 rounded-lg p-4 text-gray-300 font-mono text-sm focus:border-purple-500 focus:outline-none resize-none leading-relaxed"
                                 placeholder="Escribe aquí las instrucciones de contexto para la IA..."
                             ></textarea>
+                        </div>
+                    )}
+
+                    {activeTab === 'assistant' && (
+                        <div className="flex flex-col h-full bg-black/20 rounded-lg overflow-hidden border border-white/5">
+                            {/* Chat Area */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                                {messages.map((msg, idx) => (
+                                    <div key={idx} className={cn("flex flex-col max-w-[85%]", msg.role === 'user' ? "self-end items-end" : "self-start items-start")}>
+                                        <div className={cn(
+                                            "p-3 rounded-2xl text-sm leading-relaxed",
+                                            msg.role === 'user'
+                                                ? "bg-cyan-600/20 border border-cyan-500/30 text-cyan-50 rounded-br-none"
+                                                : "bg-[#1A1A1E] border border-white/10 text-gray-300 rounded-bl-none"
+                                        )}>
+                                            {msg.role === 'ai' && <MessageSquare size={14} className="mb-2 text-cyan-400" />}
+                                            {msg.text}
+                                        </div>
+
+                                        {/* Suggestions Chips */}
+                                        {msg.suggestions && (
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {msg.suggestions.map((sug, i) => (
+                                                    <button
+                                                        key={i}
+                                                        type="button"
+                                                        onClick={() => addSuggestion(sug)}
+                                                        className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs text-emerald-400 hover:bg-emerald-500/20 transition-colors animate-fade-in"
+                                                    >
+                                                        <Plus size={10} />
+                                                        <span>{sug}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {isTyping && (
+                                    <div className="self-start bg-[#1A1A1E] px-4 py-3 rounded-2xl rounded-bl-none flex space-x-1">
+                                        <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div>
+                                        <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce delay-100"></div>
+                                        <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce delay-200"></div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Input Area */}
+                            <div className="p-3 bg-[#1A1A1E] border-t border-white/5 flex items-center space-x-2">
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage(e)}
+                                    placeholder="Escribe tu idea o pide tareas..."
+                                    className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 transition-colors"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleSendMessage}
+                                    className="p-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg transition-colors"
+                                >
+                                    <ArrowRight size={18} />
+                                </button>
+                            </div>
                         </div>
                     )}
 

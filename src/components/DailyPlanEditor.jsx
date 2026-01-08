@@ -65,7 +65,14 @@ const DailyPlanEditor = () => {
                             {/* Task Header */}
                             <div className="p-4 flex items-start justify-between cursor-pointer" onClick={() => !editingId && handleEditClick(task)}>
                                 <div className="flex items-center space-x-3">
-                                    <div className={`w-3 h-3 rounded-full bg-${task.color}-500 shadow-[0_0_10px_currentColor] opacity-80`}></div>
+                                    <div className={cn(
+                                        "w-3 h-3 rounded-full shadow-[0_0_10px_currentColor] opacity-80",
+                                        task.color === 'cyan' && "bg-cyan-500 text-cyan-500",
+                                        task.color === 'orange' && "bg-orange-500 text-orange-500",
+                                        task.color === 'purple' && "bg-purple-500 text-purple-500",
+                                        task.color === 'emerald' && "bg-emerald-500 text-emerald-500",
+                                        !task.color && "bg-gray-500 text-gray-500"
+                                    )}></div>
                                     <div>
                                         <h3 className="font-bold text-lg text-gray-100">{task.text}</h3>
                                         <span className="text-xs font-mono text-gray-500 uppercase tracking-widest">{task.projectTitle}</span>
