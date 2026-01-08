@@ -1,6 +1,12 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ProjectProvider } from './context/ProjectContext';
 import Login from './pages/Login';
+import Sidebar from './components/Sidebar';
+import TopBar from './components/TopBar';
+import Dashboard from './components/Dashboard';
+import AIAssistant from './components/AIAssistant';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
