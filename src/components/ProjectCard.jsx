@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { cn } from '../utils'; // Util refactor
-import { Check, Edit2, Play } from 'lucide-react';
+import { Check, Edit2, Play, Trash2 } from 'lucide-react';
 import { useProjects } from '../context/ProjectContext';
 
-const ProjectCard = ({ project, onEdit }) => {
+const ProjectCard = ({ project, onEdit, onDelete }) => {
     const { title, status, progress, icon: Icon, color, tasks } = project;
     const { toggleTask } = useProjects();
 
@@ -48,12 +48,26 @@ const ProjectCard = ({ project, onEdit }) => {
         )}>
 
             {/* Edit Button (Absolute Top-Right) */}
-            <button
-                onClick={() => onEdit(project)}
-                className="absolute top-4 right-4 text-gray-600 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-                <Edit2 size={14} />
-            </button>
+            {/* Actions (Absolute Top-Right) */}
+            <div className="absolute top-4 right-4 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                <button
+                    onClick={() => onEdit(project)}
+                    className="text-gray-500 hover:text-white transition-colors"
+                >
+                    <Edit2 size={15} />
+                </button>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm(`¿Estás seguro de eliminar "${title}"?\nSe borrarán todas las tareas asociadas.`)) {
+                            onDelete(project.id);
+                        }
+                    }}
+                    className="text-gray-500 hover:text-red-500 transition-colors"
+                >
+                    <Trash2 size={15} />
+                </button>
+            </div>
 
             {/* Header */}
             <div className="flex justify-between items-start mb-4 pr-6">

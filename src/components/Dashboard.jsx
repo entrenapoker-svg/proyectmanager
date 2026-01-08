@@ -104,6 +104,7 @@ const Dashboard = () => {
                                             key={pillar.id}
                                             project={pillar}
                                             onEdit={handleEdit}
+                                            onDelete={deleteProject}
                                         />
                                     ))}
 
