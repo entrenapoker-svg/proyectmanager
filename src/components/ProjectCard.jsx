@@ -3,7 +3,7 @@ import { cn } from '../utils'; // Util refactor
 import { Check, Edit2, Play, Trash2 } from 'lucide-react';
 import { useProjects } from '../context/ProjectContext';
 
-const ProjectCard = ({ project, onEdit, onDelete }) => {
+const ProjectCard = ({ project, onEdit, onDelete, isSelected, onToggleSelect }) => {
     const { title, status, progress, icon: Icon, color, tasks } = project;
     const { toggleTask } = useProjects();
 
@@ -42,10 +42,20 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
 
     return (
         <div className={cn(
-            "group relative bg-[#121214] rounded-xl p-5 border border-white/5 transition-all duration-300 hover:-translate-y-1",
-            theme.border,
+            "group relative bg-[#121214] rounded-xl p-5 border transition-all duration-300",
+            isSelected ? "border-cyan-500 bg-cyan-500/5 ring-1 ring-cyan-500/50 translate-y-[-4px]" : "border-white/5 hover:-translate-y-1 " + theme.border,
             theme.glow
         )}>
+
+            {/* Selection Checkbox (Absolute Top-Left) */}
+            <div className="absolute top-4 left-4 z-30">
+                <input
+                    type="checkbox"
+                    checked={isSelected || false}
+                    onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
+                    className="w-4 h-4 rounded appearance-none border border-gray-600 bg-black/50 checked:bg-cyan-500 checked:border-cyan-500 cursor-pointer transition-all hover:border-cyan-400"
+                />
+            </div>
 
             {/* Edit Button (Absolute Top-Right) */}
             {/* Actions (Absolute Top-Right) */}

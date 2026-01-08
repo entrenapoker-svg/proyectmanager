@@ -5,12 +5,31 @@ import { SortableProjectCard } from './SortableProjectCard';
 import ProjectModal from './ProjectModal';
 import DailyPlanEditor from './DailyPlanEditor';
 import { useProjects } from '../context/ProjectContext';
-import { Plus, RefreshCw, CheckSquare, Settings } from 'lucide-react';
+import { Plus, RefreshCw, CheckSquare, Settings, Trash2, X } from 'lucide-react';
 
 const Dashboard = () => {
     const { projects, reorderProjects, addProject, updateProject, deleteProject, generateDailyPlan, processCommand, activeView } = useProjects();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
+    const [selectedProjects, setSelectedProjects] = useState([]);
+
+    const toggleSelection = (id) => {
+        setSelectedProjects(prev =>
+            prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
+        );
+    };
+
+    const clearSelection = () => setSelectedProjects([]);
+
+    const handleBulkDelete = async () => {
+        if (!window.confirm(`¿Estás seguro de eliminar ${selectedProjects.length} proyectos seleccionados? Esta acción es irreversible.`)) return;
+
+        // Execute deletions sequentially to ensure stability
+        for (const id of selectedProjects) {
+            await deleteProject(id);
+        }
+        clearSelection();
+    };
 
     // DND Sensors (Touch/Mouse/Keyboard)
     const sensors = useSensors(
@@ -100,18 +119,21 @@ const Dashboard = () => {
                                 {projects
                                     // Optional filter for 'projects' view could go here
                                     .map((pillar) => (
-                                        <SortableProjectCard
-                                            key={pillar.id}
-                                            project={pillar}
-                                            onEdit={handleEdit}
-                                            onDelete={deleteProject}
+                                        project = { pillar }
+                                            onEdit = { handleEdit }
+                                            onDelete = { deleteProject }
+                                            isSelected = { selectedProjects.includes(pillar.id) }
+                                            onToggleSelect = {() => toggleSelection(pillar.id)}
                                         />
                                     ))}
 
-                                {/* Add New Card (Static) */}
+                                {/* Add New Card (Static) - Hide during selection mode to reduce clutter? -> No, keep it */}
                                 <button
                                     onClick={handleCreateNew}
-                                    className="group flex flex-col items-center justify-center h-full min-h-[200px] rounded-xl border-2 border-dashed border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all duration-300"
+                                    className={cn(
+                                        "group flex flex-col items-center justify-center h-full min-h-[200px] rounded-xl border-2 border-dashed border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all duration-300",
+                                        selectedProjects.length > 0 && "opacity-50 pointer-events-none"
+                                    )}
                                 >
                                     <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-cyan-500 group-hover:text-black transition-colors mb-3">
                                         <Plus size={24} />
