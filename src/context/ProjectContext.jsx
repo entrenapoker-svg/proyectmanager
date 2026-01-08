@@ -133,32 +133,55 @@ export const ProjectProvider = ({ children }) => {
     // CRUD Operations
 
     const addProject = async (projectData) => {
-        if (!user) return;
+        if (!user) {
+            alert("Debes iniciar sesión para crear proyectos.");
+            return;
+        }
 
-        const newProjectRPC = {
+        // Whitelist DB columns to avoid "Column not found" errors
+        const dbProject = {
             user_id: user.id,
             title: projectData.title || "Nuevo Proyecto",
             color: projectData.color || 'cyan',
-            icon: 'Cpu',
-            progress: 0,
-            ai_context: "",
-            importance: 5,
-            ...projectData
+            icon: projectData.icon || 'Cpu',
+            importance: parseInt(projectData.importance) || 5,
+            ai_context: projectData.aiContext || ""
         };
-        delete newProjectRPC.id;
-        delete newProjectRPC.tasks;
 
         try {
-            const { data, error } = await supabase
+            const { data: newProject, error } = await supabase
                 .from('projects')
-                .insert([newProjectRPC])
+                .insert([dbProject])
                 .select()
                 .single();
 
             if (error) throw error;
-            setProjects(prev => [...prev, { ...data, tasks: [] }]);
+
+            let createdTasks = [];
+
+            // Insert initial tasks if present
+            if (projectData.tasks && projectData.tasks.length > 0) {
+                const tasksPayload = projectData.tasks.map(t => ({
+                    project_id: newProject.id,
+                    text: t.text,
+                    done: t.done || false,
+                    details: t.details || ""
+                }));
+
+                const { data: tasksData, error: tasksError } = await supabase
+                    .from('tasks')
+                    .insert(tasksPayload)
+                    .select();
+
+                if (!tasksError) {
+                    createdTasks = tasksData;
+                }
+            }
+
+            setProjects(prev => [...prev, { ...newProject, tasks: createdTasks }]);
         } catch (error) {
             console.error("Error creating project:", error);
+            alert("Error al crear proyecto: " + error.message);
         }
     };
 
@@ -166,15 +189,25 @@ export const ProjectProvider = ({ children }) => {
         setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
 
         try {
-            const { tasks, ...cleanData } = updatedData;
-            const { error } = await supabase
-                .from('projects')
-                .update(cleanData)
-                .eq('id', id);
+            // Filter strictly for DB columns
+            const dbUpdate = {};
+            if (updatedData.title !== undefined) dbUpdate.title = updatedData.title;
+            if (updatedData.color !== undefined) dbUpdate.color = updatedData.color;
+            if (updatedData.icon !== undefined) dbUpdate.icon = updatedData.icon;
+            if (updatedData.importance !== undefined) dbUpdate.importance = parseInt(updatedData.importance);
+            if (updatedData.aiContext !== undefined) dbUpdate.ai_context = updatedData.aiContext;
 
-            if (error) throw error;
+            if (Object.keys(dbUpdate).length > 0) {
+                const { error } = await supabase
+                    .from('projects')
+                    .update(dbUpdate)
+                    .eq('id', id);
+
+                if (error) throw error;
+            }
         } catch (error) {
             console.error("Error updating project:", error);
+            alert("Error al actualizar: " + error.message);
             fetchProjects();
         }
     };

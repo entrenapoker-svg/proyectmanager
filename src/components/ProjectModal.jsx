@@ -23,7 +23,7 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
         if (project) {
             setFormData({
                 ...project,
-                aiContext: project.aiContext || ''
+                aiContext: project.aiContext || project.ai_context || ''
             });
             setMessages([{ role: 'ai', text: `¡Hola! Soy tu copiloto para "${project.title}". ¿Necesitas ayuda descomponiendo este objetivo en tareas?` }]);
         } else {
