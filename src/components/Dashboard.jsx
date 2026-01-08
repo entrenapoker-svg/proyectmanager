@@ -44,11 +44,8 @@ const Dashboard = () => {
         }
     };
 
-    // Alert System
-    const alert = {
-        type: 'warning',
-        message: '⚠ ALERT: High variance detected in last Poker session. Review required.',
-    };
+    // Alert System - Removed as per user request
+    const alert = null;
 
     const handleCreateNew = () => {
         setEditingProject(null);
@@ -91,7 +88,7 @@ const Dashboard = () => {
 
                 {/* Section Header */}
                 <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-xl font-bold text-white tracking-tight">Active Pillars</h2>
+                    <h2 className="text-xl font-bold text-white tracking-tight">Proyectos</h2>
                     <div className="flex space-x-3">
                         <button
                             onClick={generateDailyPlan}
@@ -117,13 +114,15 @@ const Dashboard = () => {
                         <SortableContext items={projects.map(p => p.id)} strategy={rectSortingStrategy}>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {projects
-                                    // Optional filter for 'projects' view could go here
+                                    .filter(p => activeView === 'projects' ? p.category === 'IA' : true)
                                     .map((pillar) => (
-                                        project = { pillar }
-                                            onEdit = { handleEdit }
-                                            onDelete = { deleteProject }
-                                            isSelected = { selectedProjects.includes(pillar.id) }
-                                            onToggleSelect = {() => toggleSelection(pillar.id)}
+                                        <SortableProjectCard
+                                            key={pillar.id}
+                                            project={pillar}
+                                            onEdit={handleEdit}
+                                            onDelete={deleteProject}
+                                            isSelected={selectedProjects.includes(pillar.id)}
+                                            onToggleSelect={() => toggleSelection(pillar.id)}
                                         />
                                     ))}
 
