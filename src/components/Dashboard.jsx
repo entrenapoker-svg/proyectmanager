@@ -44,8 +44,11 @@ const Dashboard = () => {
         }
     };
 
-    // Alert System - Removed as per user request
-    const alert = null;
+    // Alert System
+    const alert = {
+        type: 'warning',
+        message: '⚠ ALERT: High variance detected in last Poker session. Review required.',
+    };
 
     const handleCreateNew = () => {
         setEditingProject(null);
@@ -88,7 +91,7 @@ const Dashboard = () => {
 
                 {/* Section Header */}
                 <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-xl font-bold text-white tracking-tight">Proyectos</h2>
+                    <h2 className="text-xl font-bold text-white tracking-tight">Active Pillars</h2>
                     <div className="flex space-x-3">
                         <button
                             onClick={generateDailyPlan}
