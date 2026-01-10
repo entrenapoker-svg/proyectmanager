@@ -6,6 +6,7 @@ import ProjectModal from './ProjectModal';
 import DailyPlanEditor from './DailyPlanEditor';
 import { useProjects } from '../context/ProjectContext';
 import { Plus, RefreshCw, CheckSquare, Settings, Trash2, X } from 'lucide-react';
+import { cn } from '../utils';
 
 const Dashboard = () => {
     const { projects, reorderProjects, addProject, updateProject, deleteProject, generateDailyPlan, processCommand, activeView } = useProjects();

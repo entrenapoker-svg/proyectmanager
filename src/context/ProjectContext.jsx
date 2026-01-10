@@ -58,10 +58,15 @@ export const ProjectProvider = ({ children }) => {
                 let projectsToInsert = [];
 
                 if (savedLocal) {
-                    const parsed = JSON.parse(savedLocal);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        projectsToInsert = parsed;
-                        console.log("Migrating from LocalStorage...", projectsToInsert);
+                    try {
+                        const parsed = JSON.parse(savedLocal);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            projectsToInsert = parsed;
+                            console.log("Migrating from LocalStorage...", projectsToInsert);
+                        }
+                    } catch (e) {
+                        console.error("Error parsing local jama1_projects:", e);
+                        localStorage.removeItem('jama1_projects');
                     }
                 }
 

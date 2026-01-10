@@ -1,11 +1,18 @@
 import React from 'react';
-import { Home, Grid, CheckSquare, Settings, User } from 'lucide-react';
+import { Home, Grid, CheckSquare, Settings, User, LogOut } from 'lucide-react';
 import { cn } from '../utils';
+import { useAuth } from '../context/AuthContext';
 
 
 import { useProjects } from '../context/ProjectContext'; // Context Import
 
 const Sidebar = ({ isOpen, onClose }) => {
+    // ... existing hook ...
+
+    // ... rest of Sidebar ...
+
+    // (Skip to where LogoutButton matches)
+
     const { generateDailyPlan, activeView, setActiveView } = useProjects(); // Use Context
 
     // Handle navigation click (close sidebar on mobile)
@@ -91,6 +98,10 @@ const Sidebar = ({ isOpen, onClose }) => {
                         <p className="text-[10px] text-gray-400">Progreso Diario</p>
                     </div>
                 </div>
+
+                <div className="pt-4 border-t border-white/5 mt-auto">
+                    <LogoutButton />
+                </div>
             </aside>
         </>
     );
@@ -116,6 +127,19 @@ const NavItem = ({ icon: Icon, label, active, highlight, onClick }) => {
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-cyan-500 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.8)]"></div>
             )}
         </a>
+    );
+};
+
+const LogoutButton = () => {
+    const { signOut } = useAuth();
+    return (
+        <button
+            onClick={signOut}
+            className="flex items-center space-x-3 px-3 py-2 w-full rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/5 transition-all duration-200 group"
+        >
+            <LogOut size={18} className="group-hover:text-red-400 transition-colors" />
+            <span className="text-sm font-medium">Cerrar Sesión</span>
+        </button>
     );
 };
 

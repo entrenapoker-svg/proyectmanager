@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import Dashboard from './components/Dashboard';
 import AIAssistant from './components/AIAssistant';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -21,19 +22,21 @@ function App() {
     <Router>
       <AuthProvider>
         <ProjectProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={
-              <PrivateRoute>
-                <div className="flex bg-[#0a0a0b] min-h-screen text-white font-sans selection:bg-cyan-500/30">
-                  <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <TopBar onMenuClick={() => setSidebarOpen(true)} />
-                  <Dashboard />
-                  <AIAssistant />
-                </div>
-              </PrivateRoute>
-            } />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={
+                <PrivateRoute>
+                  <div className="flex bg-[#0a0a0b] min-h-screen text-white font-sans selection:bg-cyan-500/30">
+                    <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
+                    <TopBar onMenuClick={() => setSidebarOpen(true)} />
+                    <Dashboard />
+                    <AIAssistant />
+                  </div>
+                </PrivateRoute>
+              } />
+            </Routes>
+          </ErrorBoundary>
         </ProjectProvider>
       </AuthProvider>
     </Router>
