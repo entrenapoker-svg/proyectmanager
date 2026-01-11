@@ -90,7 +90,8 @@ export const ProjectProvider = ({ children }) => {
                             color: p.color,
                             icon: 'Cpu', // Defaulting icon, could map
                             importance: p.importance || 5,
-                            ai_context: p.aiContext || ""
+                            ai_context: p.aiContext || "",
+                            category: p.category || "General"
                         };
 
                         const { data: insertedProj, error: insertError } = await supabase

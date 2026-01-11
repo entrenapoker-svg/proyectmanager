@@ -10,6 +10,7 @@ create table projects (
   icon text default 'Cpu', 
   importance int default 5,
   ai_context text,
+  category text default 'General',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
