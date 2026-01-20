@@ -12,7 +12,7 @@ const TopBar = ({ onMenuClick }) => {
     }, []);
 
     return (
-        <header className="h-14 fixed top-0 right-0 left-0 md:left-64 bg-[#0a0a0b]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 z-40 transition-all duration-300">
+        <header className="h-14 sticky top-0 z-40 bg-[#0a0a0b]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 transition-all duration-300 w-full">
             {/* Left: Hamburger (Mobile) & Breadcrumbs */}
             <div className="flex items-center space-x-2">
                 <button

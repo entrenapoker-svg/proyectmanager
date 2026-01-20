@@ -19,7 +19,7 @@ const MentalGym = () => {
     const progress = (completedCount / Object.keys(checklist).length) * 100;
 
     return (
-        <main className="flex-1 ml-0 md:ml-64 mt-14 p-4 md:p-8 min-h-screen bg-[#0a0a0b] relative pb-32">
+        <main className="flex-1 p-4 md:p-8 min-h-full bg-[#0a0a0b] relative pb-32">
 
             {/* Background Ambience (Matching Dashboard style) */}
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">

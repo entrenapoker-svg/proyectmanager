@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Mic, MicOff, Sparkles, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Mic, MicOff, Sparkles, X, Wand2, Send, Copy } from 'lucide-react';
 import { useProjects } from '../context/ProjectContext';
 import { cn } from '../utils';
 
@@ -11,13 +11,24 @@ const AIAssistant = () => {
         setTranscript,
         processCommand,
         setLastCommandResponse,
-        lastCommandResponse
+        lastCommandResponse,
+        globalPreferences
     } = useProjects();
 
+    const [manualInput, setManualInput] = useState('');
+    const [isExpanded, setIsExpanded] = useState(false);
     const recognitionRef = useRef(null);
+    const inputRef = useRef(null);
+
+    // Sync transcript to input when voice is used
+    useEffect(() => {
+        if (transcript) {
+            setManualInput(transcript);
+            setIsExpanded(true);
+        }
+    }, [transcript]);
 
     useEffect(() => {
-        // Check browser support
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
             const recognition = new SpeechRecognition();
@@ -25,30 +36,20 @@ const AIAssistant = () => {
             recognition.lang = 'es-ES';
             recognition.interimResults = true;
 
-            recognition.onstart = () => {
-                setIsListening(true);
-            };
-
-            recognition.onend = () => {
-                setIsListening(false);
-            };
-
+            recognition.onstart = () => setIsListening(true);
+            recognition.onend = () => setIsListening(false);
             recognition.onresult = (event) => {
                 const current = event.resultIndex;
                 const transcriptText = event.results[current][0].transcript;
                 setTranscript(transcriptText);
-
                 if (event.results[current].isFinal) {
-                    const response = processCommand(transcriptText);
-                    setLastCommandResponse(response);
+                    processCommand(transcriptText); // Auto-execute if voice? Or waiting for confirmation?
+                    // Currently keeping auto-execute for voice legacy, but updating input for visuals
                 }
             };
-
             recognitionRef.current = recognition;
-        } else {
-            console.warn("Speech Recognition API not supported in this browser.");
         }
-    }, []);
+    }, [setIsListening, setTranscript, processCommand]);
 
     const toggleListening = () => {
         if (isListening) {
@@ -56,15 +57,55 @@ const AIAssistant = () => {
         } else {
             setLastCommandResponse(null);
             setTranscript('');
+            setManualInput('');
+            setIsExpanded(true);
             recognitionRef.current?.start();
         }
     };
 
+    const handleMagicWand = () => {
+        if (!manualInput.trim()) return;
+
+        // "Consultar Internamente" logic: Use Global Preferences Identity
+        const identity = globalPreferences?.identity || "Experto en Productividad y Poker";
+        const style = globalPreferences?.style || "Directo y técnico";
+
+        // Logic to construct a "Well-Made Prompt"
+        const optimizedPrompt = `[ACT AS: ${identity}]
+[TONE: ${style}]
+[OBJECTIVE: Comprehensive Analysis]
+
+QUERY: "${manualInput}"
+
+INSTRUCTIONS:
+1. Analyze the request based on the user's profile.
+2. Provide a structured, step-by-step solution.
+3. Focus on high-value actionable advice.`;
+
+        setManualInput(optimizedPrompt);
+
+        // Pulse effect or notification could go here
+    };
+
+    const handleSend = () => {
+        if (!manualInput.trim()) return;
+        const response = processCommand(manualInput);
+        setLastCommandResponse(response);
+    };
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(manualInput);
+        alert("Prompt copiado al portapapeles");
+    };
+
     return (
         <>
-            {/* Floating Action Button */}
+            {/* Main Floating Button */}
             <button
-                onClick={toggleListening}
+                onClick={() => {
+                    if (!isExpanded) setIsExpanded(true);
+                    else toggleListening();
+                }}
                 className={cn(
                     "fixed bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 z-[60] border border-white/10",
                     isListening
@@ -75,43 +116,64 @@ const AIAssistant = () => {
                 {isListening ? <MicOff className="text-white" /> : <Mic className="text-black" />}
             </button>
 
-            {/* Voice Interface Overlay */}
-            {(isListening || transcript || lastCommandResponse) && (
-                <div className="fixed bottom-24 right-8 w-80 bg-[#121214]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl z-[60] animate-fade-in-down">
-                    <div className="flex justify-between items-center mb-4">
+            {/* Expanded Interface */}
+            {isExpanded && (
+                <div className="fixed bottom-24 right-8 w-96 bg-[#121214]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl z-[60] animate-fade-in-up flex flex-col gap-4">
+
+                    {/* Header */}
+                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
                         <div className="flex items-center space-x-2">
                             <Sparkles size={16} className="text-cyan-400" />
-                            <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">JAMA1 AI Agent</span>
+                            <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">JAMA1 AI Console</span>
                         </div>
-                        <button onClick={() => { setIsListening(false); setTranscript(''); setLastCommandResponse(null); }} className="text-gray-500 hover:text-white">
+                        <button onClick={() => setIsExpanded(false)} className="text-gray-500 hover:text-white">
                             <X size={14} />
                         </button>
                     </div>
 
-                    {/* Visualizer / Status */}
-                    <div className="h-16 flex items-center justify-center mb-4 relative overflow-hidden bg-black/20 rounded-lg">
-                        {isListening ? (
-                            <div className="flex items-center space-x-1">
-                                {[1, 2, 3, 4, 5].map(i => (
-                                    <div key={i} className="w-1 bg-cyan-500 animate-pulse" style={{ height: `${Math.random() * 20 + 10}px`, animationDuration: `${0.2 + Math.random() * 0.3}s` }}></div>
-                                ))}
-                            </div>
-                        ) : (
-                            <span className="text-xs text-gray-600 font-mono">Esperando comando...</span>
-                        )}
-                    </div>
+                    {/* Input Area */}
+                    <div className="relative">
+                        <textarea
+                            ref={inputRef}
+                            value={manualInput}
+                            onChange={(e) => setManualInput(e.target.value)}
+                            placeholder="Describe tu tarea o comando..."
+                            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-500/50 min-h-[100px] resize-y font-mono"
+                        />
 
-                    {/* Transcript */}
-                    {transcript && (
-                        <div className="mb-4">
-                            <p className="text-sm text-white italic">"{transcript}"</p>
+                        {/* Magic Actions Bar */}
+                        <div className="flex justify-end gap-2 mt-2">
+                            <button
+                                onClick={handleMagicWand}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/20 transition-all group"
+                                title="Mejorar Prompt (Varita Mágica)"
+                            >
+                                <Wand2 size={14} className="group-hover:rotate-12 transition-transform" />
+                                <span>Enhance</span>
+                            </button>
+
+                            <button
+                                onClick={copyToClipboard}
+                                className="p-1.5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                                title="Copiar"
+                            >
+                                <Copy size={14} />
+                            </button>
+
+                            <button
+                                onClick={handleSend}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-bold border border-cyan-500/20 transition-all ml-auto"
+                            >
+                                <Send size={14} />
+                                <span>Ejecutar</span>
+                            </button>
                         </div>
-                    )}
+                    </div>
 
                     {/* System Response */}
                     {lastCommandResponse && (
-                        <div className="mt-2 text-xs font-mono text-emerald-400 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded">
-                            &gt; {lastCommandResponse}
+                        <div className="mt-2 text-xs font-mono text-emerald-400 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
+                            <span className="opacity-50 select-none">&gt; </span>{lastCommandResponse}
                         </div>
                     )}
                 </div>
