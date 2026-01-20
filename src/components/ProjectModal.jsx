@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Trash2, Plus, Brain, FileText, Settings, MessageSquare, ArrowRight, Star } from 'lucide-react';
+import { X, Save, Trash2, Plus, Brain, FileText, Settings, MessageSquare, ArrowRight, Star, Wand2 } from 'lucide-react';
 import { cn } from '../utils';
+import { useProjects } from '../context/ProjectContext';
 
 const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
+    const { globalPreferences } = useProjects();
     const [activeTab, setActiveTab] = useState('details'); // 'details' | 'context'
     const [formData, setFormData] = useState({
         title: '',
@@ -108,6 +110,24 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
             ...prev,
             tasks: [...prev.tasks, { id: Date.now(), text: text, done: false }]
         }));
+    };
+
+    const handleEnhanceContext = () => {
+        const text = formData.aiContext;
+        if (!text.trim()) return;
+
+        const identity = globalPreferences?.identity || "Experto";
+        const improved = `[ROLE: ${identity}]
+[OFFICIAL CONTEXT for Project: ${formData.title}]
+
+OBJECTIVE: "${text}"
+
+INSTRUCTIONS:
+- Maintain strict focus on this objective.
+- Prioritize high-leverage tasks.
+- Use the defined professional persona.`;
+
+        setFormData(prev => ({ ...prev, aiContext: improved }));
     };
 
     const handleSubmit = (e) => {
@@ -274,9 +294,20 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
 
                     {activeTab === 'context' && (
                         <div className="space-y-4 h-full">
-                            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-purple-200 text-xs mb-4">
-                                <p className="font-bold flex items-center mb-1"><Settings size={12} className="mr-1" /> Instrucciones de Proyecto (Capa 2)</p>
-                                Define cómo debe comportarse la IA en este proyecto específico. Ejemplo: "Actúa como un entrenador de Poker agresivo".
+                            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-purple-200 text-xs mb-4 flex justify-between items-start">
+                                <div>
+                                    <p className="font-bold flex items-center mb-1"><Settings size={12} className="mr-1" /> Instrucciones de Proyecto (Capa 2)</p>
+                                    Define cómo debe comportarse la IA en este proyecto específico.
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleEnhanceContext}
+                                    className="flex items-center gap-1.5 px-2 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded text-[10px] uppercase font-bold transition-all border border-purple-500/30 hover:border-purple-400 group"
+                                    title="Mejorar con IA (Varita Mágica)"
+                                >
+                                    <Wand2 size={12} className="group-hover:rotate-12 transition-transform" />
+                                    Magic Enhance
+                                </button>
                             </div>
 
                             <textarea
