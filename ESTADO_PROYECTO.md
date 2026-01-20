@@ -1,36 +1,37 @@
 # Estado del Proyecto: JAMA1 Central
 
-**Fecha:** 6 de Enero, 2026
+**Fecha:** 20 de Enero, 2026
 **Ubicación:** `c:\Users\jamaik\Desktop\manager de Proyecto`
 
 ## 1. Resumen de Últimos Cambios
-Se han integrado funcionalidades avanzadas de gestión de tareas inspiradas en la metodología de Teresa Torres, y se ha refactorizado el código para mejorar la estabilidad.
+Hemos implementado el módulo de **Rendimiento Mental ("Mental Gym")** y un sistema robusto de métricas post-sesión, además de solucionar problemas críticos de conectividad y estabilidad.
 
 ### Funcionalidades Implementadas
-*   **Plan Diario de Ejecución (/Today):**
-    *   Nuevo componente `DailyPlanEditor.jsx`.
-    *   Funciona como un *overlay* (capa superpuesta) para enfoque total.
-    *   Permite expandir tareas, escribir estrategias detalladas y tiene un botón (simulado) para dictado de voz.
-*   **Organización Visual (Drag & Drop):**
-    *   Integración de `@dnd-kit`.
-    *   Componente `SortableProjectCard.jsx`.
-    *   Los proyectos en el Dashboard ahora se pueden arrastrar y reordenar; el orden se guarda en `LocalStorage`.
-*   **Navegación (Sidebar):**
-    *   Actualizado para incluir la sección "Acción" con acceso directo a "Tareas para Hoy".
-    *   Refactorizado para ser más limpio visualmente.
-*   **Persistencia de Datos:**
-    *   Todo el estado (Proyectos, Tareas, Orden, Contexto IA) se guarda automáticamente en el navegador (`LocalStorage`).
+*   **Gimnasio Mental (Rendimiento):**
+    *   Nueva página `/gym` con rutinas de preparación ("Protocolo Pre-Sesión"), Warm Up técnico y Journaling.
+    *   Diseño Premium Dark/Neon integrado.
+*   **Session Debriefing (Cierre de Sesión):**
+    *   Nuevo componente `SessionDebrief.jsx` que se activa al cerrar sesión.
+    *   Permite registrar métricas clave: Concentración, Tilt, Resistencia y Desconcentraciones.
+    *   Datos listos para ser visualizados en futuros Dashboards.
+*   **Sistema de Login Robusto:**
+    *   Implementado **Modo Demo (Offline)**: Permite usar la app incluso si la base de datos (Supabase) está caída.
+    *   Mejorado `AuthContext` con timeouts de seguridad para evitar "pantallas negras".
+*   **Estabilidad:**
+    *   Corrección de la arquitectura de rutas en `App.jsx` (Migración a `react-router-dom` completo).
+    *   `ErrorBoundary` global mejorado para permitir reinicios limpios (`localStorage.clear()`).
 
-### Cambios Técnicos (Refactorización)
-*   **Gestión de Dependencias:** Se creó `src/utils.js` para centralizar la función `cn` (fusión de clases Tailwind), solucionando errores de dependencias circulares que rompían la compilación.
-*   **Contexto:** `ProjectContext.jsx` maneja ahora la lógica de "Plan Mode" y el reordenamiento de proyectos.
+### Cambios Técnicos
+*   **Rutas:** Se eliminó la navegación basada en estado simple y se implementó un sistema de rutas real (`/login`, `/`, `/gym`).
+*   **Base de Datos:** Se restauró la conexión con Supabase y se aseguró la integridad del esquema SQL (tablas `projects`, `tasks`).
 
 ## 2. Estructura de Archivos Clave
-*   `src/components/Dashboard.jsx`: Controlador principal, integra DND y el Modal.
-*   `src/components/DailyPlanEditor.jsx`: Editor de enfoque para el plan del día.
-*   `src/components/ProjectModal.jsx`: Edición completa de proyectos + Pestaña de Contexto IA.
-*   `src/components/Sidebar.jsx`: Navegación lateral.
-*   `src/context/ProjectContext.jsx`: Cerebro de la aplicación.
+*   `src/pages/MentalGym.jsx`: Página de preparación mental.
+*   `src/components/SessionDebrief.jsx`: Modal de métricas post-sesión.
+*   `src/components/Dashboard.jsx`: Controlador principal de proyectos.
+*   `src/context/AuthContext.jsx`: Manejo de sesión y modo offline.
+*   `src/App.jsx`: Enrutador principal y Layout.
 
-## 3. Estado Actual
-El sistema está configurado para reiniciar objetivos.
+## 3. Próximos Pasos
+*   Implementar Dashboard de Métricas con gráficas (usando los datos de `SessionDebrief`).
+*   Conectar el "Gimnasio Mental" con la base de datos para seguimiento histórico.

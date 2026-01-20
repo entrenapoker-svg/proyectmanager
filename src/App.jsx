@@ -11,8 +11,9 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const isDemo = localStorage.getItem('demo_mode') === 'true';
   if (loading) return null; // Or a loading spinner
-  return user ? children : <Navigate to="/login" />;
+  return (user || isDemo) ? children : <Navigate to="/login" />;
 };
 
 function App() {

@@ -11,22 +11,41 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let mounted = true;
+
+        // Safety timeout to prevent black screen if Supabase hangs
+        const timeout = setTimeout(() => {
+            if (mounted) {
+                console.warn("Auth check timed out, forcing load completion.");
+                setLoading(false);
+            }
+        }, 3000);
+
         // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            setLoading(false);
+            if (mounted) {
+                setUser(session?.user ?? null);
+                setLoading(false);
+                clearTimeout(timeout);
+            }
         }).catch((error) => {
             console.error("Auth session check failed:", error);
-            setLoading(false);
+            if (mounted) setLoading(false);
         });
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-            setLoading(false);
+            if (mounted) {
+                setUser(session?.user ?? null);
+                setLoading(false);
+            }
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            mounted = false;
+            clearTimeout(timeout);
+            subscription.unsubscribe();
+        };
     }, []);
 
     const signIn = async (email, password) => {

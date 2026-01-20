@@ -1,24 +1,21 @@
-import React from 'react';
-import { Home, Grid, CheckSquare, Settings, User, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Home, Grid, CheckSquare, Settings, User, LogOut, Brain } from 'lucide-react';
 import { cn } from '../utils';
 import { useAuth } from '../context/AuthContext';
-
-
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useProjects } from '../context/ProjectContext'; // Context Import
+import SessionDebrief from './SessionDebrief';
 
 const Sidebar = ({ isOpen, onClose }) => {
-    // ... existing hook ...
-
-    // ... rest of Sidebar ...
-
-    // (Skip to where LogoutButton matches)
-
     const { generateDailyPlan, activeView, setActiveView } = useProjects(); // Use Context
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [showDebrief, setShowDebrief] = useState(false);
 
     // Handle navigation click (close sidebar on mobile)
     const handleNavClick = (view) => {
         setActiveView(view);
-        if (window.innerWidth < 768) { // Simple mobile check or just always call onClose
+        if (window.innerWidth < 768) {
             onClose && onClose();
         }
     };
@@ -32,6 +29,8 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     return (
         <>
+            <SessionDebrief isOpen={showDebrief} onClose={() => setShowDebrief(false)} />
+
             {/* Mobile Backdrop */}
             {isOpen && (
                 <div
@@ -65,8 +64,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <NavItem
                         icon={Home}
                         label="Overview"
-                        active={activeView === 'overview'}
-                        onClick={() => handleNavClick('overview')}
+                        active={activeView === 'overview' && location.pathname === '/'}
+                        onClick={() => { navigate('/'); handleNavClick('overview'); }}
                     />
                     <NavItem
                         icon={Grid}
@@ -83,6 +82,16 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mt-6 mb-2">Acción</p>
                     <NavItem icon={CheckSquare} label="Tareas para Hoy" highlight onClick={handleActionClick} />
+
+                    <div className="mt-6 px-0">
+                        <NavItem
+                            icon={Brain}
+                            label="Gimnasio Mental"
+                            active={location.pathname === '/gym'}
+                            highlight
+                            onClick={() => navigate('/gym')}
+                        />
+                    </div>
                 </nav>
 
                 {/* Habits Widget (Mini) */}
@@ -100,7 +109,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="pt-4 border-t border-white/5 mt-auto">
-                    <LogoutButton />
+                    <LogoutButton onClick={() => setShowDebrief(true)} />
                 </div>
             </aside>
         </>
@@ -130,15 +139,15 @@ const NavItem = ({ icon: Icon, label, active, highlight, onClick }) => {
     );
 };
 
-const LogoutButton = () => {
-    const { signOut } = useAuth();
+const LogoutButton = ({ onClick }) => {
+    // Session Debrief trigger
     return (
         <button
-            onClick={signOut}
+            onClick={onClick}
             className="flex items-center space-x-3 px-3 py-2 w-full rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/5 transition-all duration-200 group"
         >
             <LogOut size={18} className="group-hover:text-red-400 transition-colors" />
-            <span className="text-sm font-medium">Cerrar Sesión</span>
+            <span className="text-sm font-medium">Finalizar Sesión</span>
         </button>
     );
 };

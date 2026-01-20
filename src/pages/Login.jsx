@@ -87,7 +87,7 @@ export default function Login() {
                         {isSignUp ? 'Registrarse' : 'Entrar'}
                     </button>
 
-                    <div className="text-center mt-4">
+                    <div className="text-center mt-4 space-y-4">
                         <button
                             type="button"
                             onClick={() => setIsSignUp(!isSignUp)}
@@ -95,6 +95,19 @@ export default function Login() {
                         >
                             {isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Registrate'}
                         </button>
+
+                        <div className="pt-4 border-t border-white/10">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    localStorage.setItem('demo_mode', 'true');
+                                    window.location.href = '/';
+                                }}
+                                className="text-xs text-gray-500 hover:text-emerald-500 transition-colors uppercase tracking-widest font-bold"
+                            >
+                                Ingresar en Modo Demo (Offline)
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
