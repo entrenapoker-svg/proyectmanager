@@ -81,7 +81,7 @@ const Dashboard = () => {
             <DailyPlanEditor />
 
             {/* Content Container */}
-            <div className="relative z-10 max-w-7xl mx-auto">
+            <div className="relative z-10 w-full max-w-none">
 
                 {/* Alert Banner */}
                 {alert && (
