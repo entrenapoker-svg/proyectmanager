@@ -70,7 +70,7 @@ const Dashboard = () => {
     };
 
     return (
-        <main className="flex-1 ml-0 md:ml-64 mt-14 p-4 md:p-8 min-h-screen bg-[#0a0a0b] relative pb-32">
+        <main className="flex-1 ml-0 mt-14 p-4 md:p-8 min-h-screen bg-[#0a0a0b] relative pb-32">
             {/* Background Gradients / Glows */}
             <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-cyan-500/5 rounded-full blur-[120px]"></div>
