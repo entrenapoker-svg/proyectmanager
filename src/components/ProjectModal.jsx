@@ -81,28 +81,27 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
         setInput('');
         setIsTyping(true);
 
-        // MOCK AI LOGIC (To be replaced by real API)
-        setTimeout(() => {
-            const lowerInput = userMsg.text.toLowerCase();
-            let aiResponse = { role: 'ai', text: '', suggestions: [] };
+        // REAL AI INTEGRATION
+        try {
+            // Import dynamically to avoid circular deps if any, or just standard import usage
+            const { generateAIResponse } = await import('../lib/ai');
 
-            if (lowerInput.includes('tarea') || lowerInput.includes('plan') || lowerInput.includes('hacer') || lowerInput.includes('ayuda')) {
-                aiResponse.text = `Analizando el contexto "${formData.category}" y tu objetivo... He detectado estas acciones clave para avanzar:`;
-                aiResponse.suggestions = [
-                    `Investigación de mercado para ${formData.title || 'el proyecto'}`,
-                    "Definir arquitectura inicial",
-                    "Crear prototipo de baja fidelidad",
-                    "Configurar entorno de desarrollo"
-                ];
-            } else if (lowerInput.includes('hola')) {
-                aiResponse.text = `¡Hola! Estoy listo. Tu proyecto tiene una prioridad de ${formData.importance}/10. ¿Quieres que sugiera tareas para aumentar el impacto inmediato?`;
-            } else {
-                aiResponse.text = "Entendido. He procesado esa información. Si necesitas que la convierta en items accionables, solo pídelo.";
-            }
+            const response = await generateAIResponse(
+                userMsg.text,
+                formData.aiContext, // Pass the context from Tab 2
+                formData.title
+            );
 
-            setMessages(prev => [...prev, aiResponse]);
+            setMessages(prev => [...prev, {
+                role: 'ai',
+                text: response.text,
+                suggestions: response.suggestions
+            }]);
+        } catch (error) {
+            setMessages(prev => [...prev, { role: 'ai', text: "Error procesando tu solicitud." }]);
+        } finally {
             setIsTyping(false);
-        }, 1500);
+        }
     };
 
     const addSuggestion = (text) => {
