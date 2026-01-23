@@ -111,22 +111,45 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
         }));
     };
 
-    const handleEnhanceContext = () => {
+    const handleEnhanceContext = async () => {
         const text = formData.aiContext;
         if (!text.trim()) return;
 
-        const identity = globalPreferences?.identity || "Experto";
-        const improved = `[ROLE: ${identity}]
-[OFFICIAL CONTEXT for Project: ${formData.title}]
+        // Visual feedback (optional: loading state could be added here)
+        const originalText = text;
+        setFormData(prev => ({ ...prev, aiContext: "✨ Mejorando contexto con IA... espera un momento..." }));
 
-OBJECTIVE: "${text}"
+        try {
+            const { generateAIResponse } = await import('../lib/ai');
+            const identity = globalPreferences?.identity || "Expert Professional";
 
-INSTRUCTIONS:
-- Maintain strict focus on this objective.
-- Prioritize high-leverage tasks.
-- Use the defined professional persona.`;
+            // Meta-Prompt to ask AI to create a System Prompt
+            const metaPrompt = `
+            Task: Rewrite the following draft context into a HIGH-QUALITY SYSTEM PROMPT for an AI Assistant.
+            
+            User's Draft: "${originalText}"
+            Target Project: "${formData.title}"
+            My Identity/Style: "${identity}"
+            
+            Output strictly the new polished context instructions. No intro/outro. Use the format:
+            [ROLE DEFINITION]
+            [OBJECTIVES]
+            [CONSTRAINTS]
+            `;
 
-        setFormData(prev => ({ ...prev, aiContext: improved }));
+            const response = await generateAIResponse(metaPrompt, "You are an expert Prompt Engineer.");
+
+            if (response && response.text) {
+                setFormData(prev => ({ ...prev, aiContext: response.text }));
+            } else {
+                // Fallback
+                setFormData(prev => ({ ...prev, aiContext: originalText }));
+            }
+        } catch (error) {
+            console.error(error);
+            setFormData(prev => ({ ...prev, aiContext: originalText })); // Revert on error
+            alert("Error al conectar con la IA para mejorar el contexto.");
+        }
     };
 
     const handleSubmit = (e) => {
