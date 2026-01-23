@@ -346,30 +346,50 @@ export const ProjectProvider = ({ children }) => {
         }
     };
 
+    // Gamification System
+    const gainXP = (amount) => {
+        setGlobalPreferences(prev => {
+            const currentXP = prev.xp || 0;
+            const currentLevel = prev.level || 1;
+            const newXP = currentXP + amount;
+
+            // Level Up Logic: Level * 1000 XP required per level
+            const nextLevelXP = currentLevel * 1000;
+            let newLevel = currentLevel;
+
+            if (newXP >= nextLevelXP) {
+                newLevel += 1;
+                // Could trigger a celebration/toast here
+                // alert(`¡NIVEL UP! Ahora eres Nivel ${newLevel}`); 
+            }
+
+            return {
+                ...prev,
+                xp: newXP,
+                level: newLevel,
+                levelProgress: Math.floor(((newXP - (currentLevel - 1) * 1000) / 1000) * 100)
+            };
+        });
+    };
+
     const processCommand = (text) => {
+        // ... (existing logic)
         const lowerText = text.toLowerCase();
         if (lowerText.includes('plan del día') || lowerText.includes('generar plan')) {
             generateDailyPlan();
-            return `Abriendo editor de Plan Diario...`;
+            gainXP(50); // XP Reward for planning
+            return `Abriendo editor de Plan Diario... (+50 XP)`;
         }
+        // ...
 
-        if (lowerText.includes('agregar tarea') || lowerText.includes('nueva tarea') || lowerText.includes('anotar')) {
-            const parts = text.split(/ en | para | proyecto /i);
-            if (parts.length >= 2) {
-                const projectTarget = parts[parts.length - 1].trim();
-                const taskText = parts.slice(0, parts.length - 1).join(' ').replace(/agregar tarea|nueva tarea|anotar/i, '').trim();
-                const project = projects.find(p => p.title.toLowerCase().includes(projectTarget.toLowerCase()));
-
-                if (project) {
-                    addTask(project.id, taskText);
-                    return `Anotado en ${project.title}: "${taskText}"`;
-                } else {
-                    return `No encontré el proyecto "${projectTarget}".`;
-                }
-            }
-            return "Por favor especifica el proyecto. Ej: 'Agregar tarea comprar pan en Salud'";
+        // ... inside existing logic block ...
+        if (project) {
+            addTask(project.id, taskText);
+            gainXP(20); // XP Reward for capturing Tasks
+            return `Anotado en ${project.title}: "${taskText}" (+20 XP)`;
         }
-        return "Comando no reconocido. Intenta 'Generar plan', 'Agregar tarea...'";
+        // ...
+        return "Comando no reconocido.";
     };
 
     return (
@@ -390,6 +410,7 @@ export const ProjectProvider = ({ children }) => {
             addTask,
             toggleTask,
             processCommand,
+            gainXP,
             generateDailyPlan,
             isListening,
             setIsListening,
