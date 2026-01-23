@@ -1,37 +1,40 @@
 # Estado del Proyecto: JAMA1 Central
 
-**Fecha:** 20 de Enero, 2026
+**Fecha:** 23 de Enero, 2026
 **Ubicación:** `c:\Users\jamaik\Desktop\manager de Proyecto`
+**Repositorio:** `entrenapoker-svg/proyectmanager`
 
-## 1. Resumen de Últimos Cambios
-Hemos implementado el módulo de **Rendimiento Mental ("Mental Gym")** y un sistema robusto de métricas post-sesión, además de solucionar problemas críticos de conectividad y estabilidad.
+## 1. Resumen de Hitos Recientes
+Se ha logrado una integración completa con Inteligencia Artificial Real y se ha estabilizado la arquitectura base de la aplicación.
 
-### Funcionalidades Implementadas
-*   **Gimnasio Mental (Rendimiento):**
-    *   Nueva página `/gym` con rutinas de preparación ("Protocolo Pre-Sesión"), Warm Up técnico y Journaling.
-    *   Diseño Premium Dark/Neon integrado.
-*   **Session Debriefing (Cierre de Sesión):**
-    *   Nuevo componente `SessionDebrief.jsx` que se activa al cerrar sesión.
-    *   Permite registrar métricas clave: Concentración, Tilt, Resistencia y Desconcentraciones.
-    *   Datos listos para ser visualizados en futuros Dashboards.
-*   **Sistema de Login Robusto:**
-    *   Implementado **Modo Demo (Offline)**: Permite usar la app incluso si la base de datos (Supabase) está caída.
-    *   Mejorado `AuthContext` con timeouts de seguridad para evitar "pantallas negras".
-*   **Estabilidad:**
-    *   Corrección de la arquitectura de rutas en `App.jsx` (Migración a `react-router-dom` completo).
-    *   `ErrorBoundary` global mejorado para permitir reinicios limpios (`localStorage.clear()`).
+### Funcionalidades IA (Gemini 1.5 Flash) 🧠
+*   **Motor de IA Real:** Implementado servicio `src/lib/ai.js` que conecta directamente con la API de Google Gemini.
+*   **Asistente de Proyecto:** En el Modal de cada proyecto, la pestaña "Asistente IA" ahora responde inteligentemente basándose en el contexto específico de ese proyecto (Título, Categoría, Contexto definido).
+*   **Varita Mágica (Context Enhancer):** Funcionalidad en la pestaña "Contexto" que toma un borrador del usuario y lo reescribe automáticamente como un *System Prompt* profesional usando la IA.
 
-### Cambios Técnicos
-*   **Rutas:** Se eliminó la navegación basada en estado simple y se implementó un sistema de rutas real (`/login`, `/`, `/gym`).
-*   **Base de Datos:** Se restauró la conexión con Supabase y se aseguró la integridad del esquema SQL (tablas `projects`, `tasks`).
+### Estabilidad y UI 🎨
+*   **Layout Refactorizado:** Se corrigió la estructura de `App.jsx`, `Sidebar.jsx`, `TopBar.jsx` y `Dashboard.jsx`. Ahora usa un sistema Flexbox robusto (Sidebar estático + Columna de contenido fluida), eliminando problemas de superposición y espacios vacíos.
+*   **Login & Supabase:** Recuperación automática de conexión y "Modo Demo" para contingencias.
 
-## 2. Estructura de Archivos Clave
-*   `src/pages/MentalGym.jsx`: Página de preparación mental.
-*   `src/components/SessionDebrief.jsx`: Modal de métricas post-sesión.
-*   `src/components/Dashboard.jsx`: Controlador principal de proyectos.
-*   `src/context/AuthContext.jsx`: Manejo de sesión y modo offline.
-*   `src/App.jsx`: Enrutador principal y Layout.
+## 2. Estructura Técnica Actual
+*   **Frontend:** React + Vite + Tailwind CSS.
+*   **Backend/Data:** Supabase (PostgreSQL).
+*   **IA:** Google Generative AI SDK (`@google/generative-ai`).
+*   **Hosting:** Vercel.
 
-## 3. Próximos Pasos
-*   Implementar Dashboard de Métricas con gráficas (usando los datos de `SessionDebrief`).
-*   Conectar el "Gimnasio Mental" con la base de datos para seguimiento histórico.
+## 3. Planes a Seguir (Roadmap) 🚀
+
+### A. Visualización de Datos (Analytics)
+*   Crear el **Dashboard de Métricas Mental**: Usar los datos recolectados en el "Session Debrief" (Tilt, Concentración) para generar gráficas de rendimiento a lo largo del tiempo.
+*   Librería sugerida: `recharts`.
+
+### B. Gamificación (Engagement)
+*   Implementar sistema visual de **Experiencia (XP)** y Niveles.
+*   Recompensar al usuario por completar el "Protocolo Pre-Sesión" y el "Debrief".
+
+### C. Limpieza y Seguridad
+*   **Hotfix Revert:** Eliminar la API Key hardcodeada en `ai.js` una vez confirmado que la variable de entorno en Vercel funciona correctamente.
+*   Optimizar manejo de errores en la conexión IA para casos extremos (cortes de red).
+
+---
+*Documento generado automáticamente por JAMA1 AI Agent.*
