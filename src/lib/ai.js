@@ -1,28 +1,44 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize Gemini API
-// NOTE: You need to add VITE_GEMINI_API_KEY to your .env file
+// Initialize Gemini API with Hardcoded Key (Hotfix)
 const genAI = new GoogleGenerativeAI("AIzaSyBwU_AqBYBzO6b7LeawntlKIzxk2Y0mNhw");
 
 export const generateAIResponse = async (userMessage, context = "", projectTitle = "") => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        // Use gemini-1.5-flash for best performance/cost ratio
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        // ... rest of logic ...
+        const prompt = `
+        ACT AS AN EXPERT PROJECT MANAGER.
+        CONTEXT FOR PROJECT "${projectTitle}":
+        ${context || "General tasks."}
+        
+        USER REQUEST: "${userMessage}"
+        
+        INSTRUCTIONS:
+        1. Analyze based on context.
+        2. If asking for specific tasks, list them clearly.
+        3. Be direct and concise.
+        `;
 
         const result = await model.generateContent(prompt);
-        // ...
+        const response = await result.response;
 
-        return {
-            text: text,
-            suggestions: suggestions
-        };
+        const text = response.text();
+
+        // Simple parsing logic
+        const suggestions = text.split('\n')
+            .filter(line => line.trim().match(/^[-*1-9]/)) // Lines starting with list markers
+            .map(line => line.replace(/^[-*0-9.)]+/, '').trim())
+            .slice(0, 5);
+
+        return { text, suggestions };
 
     } catch (error) {
-        console.error("AI Generation Error Full Object:", error);
+        console.error("AI Error:", error);
         return {
-            text: `Error de Conexión: ${error.message || error.toString()}`,
+            text: `(Error IA: ${error.message || "Desconocido"}). Verifica tu conexión.`,
             suggestions: []
         };
     }
