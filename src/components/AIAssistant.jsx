@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, Sparkles, X, Wand2, Send, Copy } from 'lucide-react';
+import { Mic, MicOff, Sparkles, X, Wand2, Send, Copy, HelpCircle } from 'lucide-react';
 import { useProjects } from '../context/ProjectContext';
 import { cn } from '../utils';
 
@@ -19,6 +19,7 @@ const AIAssistant = () => {
     const [manualInput, setManualInput] = useState('');
     const [isExpanded, setIsExpanded] = useState(false);
     const [view, setActiveView] = useState('console'); // 'console' | 'settings'
+    const [showHelp, setShowHelp] = useState(false);
     const recognitionRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -144,7 +145,34 @@ INSTRUCTIONS:
                     {view === 'settings' ? (
                         <div className="flex flex-col gap-3 p-1">
                             <div>
-                                <label className="text-xs text-gray-500 mb-1 block">Tu API Key (Gemini)</label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="text-xs text-gray-500">Tu API Key (Gemini)</label>
+                                    <button
+                                        onClick={() => setShowHelp(!showHelp)}
+                                        className="text-cyan-400 hover:text-cyan-300 text-[10px] flex items-center gap-1"
+                                    >
+                                        <HelpCircle size={12} />
+                                        ¿Cómo conseguirla?
+                                    </button>
+                                </div>
+
+                                {showHelp && (
+                                    <div className="bg-cyan-900/20 border border-cyan-500/30 p-2 rounded-lg mb-2 text-[10px] text-gray-300">
+                                        <p className="font-bold text-cyan-400 mb-1">¡Es GRATIS y fácil!</p>
+                                        <ol className="list-decimal list-inside space-y-1">
+                                            <li>Ve a <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-cyan-400 underline decoration-dashed">Google AI Studio</a>.</li>
+                                            <li>Logueate con tu cuenta Google.</li>
+                                            <li>Clic en <strong>Create API Key</strong>.</li>
+                                            <li>Copia la clave y pégala abajo.</li>
+                                        </ol>
+                                        <div className="mt-2 text-center">
+                                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="inline-block bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-1 rounded text-[10px] font-bold transition-colors">
+                                                Ir a Crear Key →
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <input
                                     type="password"
                                     value={globalPreferences?.userApiKey || ""}
