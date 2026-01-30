@@ -22,7 +22,9 @@ export const ProjectProvider = ({ children }) => {
         return saved ? JSON.parse(saved) : {
             identity: "Soy jama1, experto en IA, Poker y Techno.",
             style: "Directo, técnico y sin rodeos.",
-            workflow: "Planifica antes de ejecutar."
+            workflow: "Planifica antes de ejecutar.",
+            userApiKey: "", // Custom user API Key
+            userModel: "gemini-2.0-flash-lite-001" // Default model selection
         };
     });
 

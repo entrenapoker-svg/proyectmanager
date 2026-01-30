@@ -2,12 +2,31 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini API with Hardcoded Key (Hotfix)
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "YOUR_API_KEY_HERE");
-
 export const generateAIResponse = async (userMessage, context = "", projectTitle = "") => {
     try {
-        // Switching to gemini-2.0-flash-lite-001 to avoid rate limits on standard flash
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-001" });
+        // 1. Get User Preferences from LocalStorage
+        let apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+        let modelName = "gemini-2.0-flash-lite-001"; // Default Fallback
+
+        try {
+            const savedPrefs = localStorage.getItem('jama1_global_prefs');
+            if (savedPrefs) {
+                const parsed = JSON.parse(savedPrefs);
+                if (parsed.userApiKey && parsed.userApiKey.trim().length > 10) {
+                    apiKey = parsed.userApiKey;
+                    console.log("Using User Custom API Key");
+                }
+                if (parsed.userModel) {
+                    modelName = parsed.userModel;
+                }
+            }
+        } catch (e) {
+            console.error("Error reading local AI prefs", e);
+        }
+
+        // 2. Initialize Client Dynamically
+        const dynamicGenAI = new GoogleGenerativeAI(apiKey);
+        const model = dynamicGenAI.getGenerativeModel({ model: modelName });
 
         const prompt = `
         ACT AS AN EXPERT PROJECT MANAGER.
