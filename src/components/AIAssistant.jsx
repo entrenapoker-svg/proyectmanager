@@ -129,122 +129,60 @@ INSTRUCTIONS:
                             <Sparkles size={16} className="text-cyan-400" />
                             <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">JAMA1 AI Console</span>
                         </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setActiveView(v => v === 'settings' ? 'console' : 'settings')}
-                                className={cn("text-xs uppercase tracking-wider hover:text-white transition-colors", view === 'settings' ? "text-cyan-400 font-bold" : "text-gray-500")}
-                            >
-                                Config
-                            </button>
-                            <button onClick={() => setIsExpanded(false)} className="text-gray-500 hover:text-white">
-                                <X size={14} />
-                            </button>
-                        </div>
+                        <button onClick={() => setIsExpanded(false)} className="text-gray-500 hover:text-white">
+                            <X size={14} />
+                        </button>
                     </div>
 
-                    {view === 'settings' ? (
-                        <div className="flex flex-col gap-3 p-1">
-                            <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <label className="text-xs text-gray-500">Tu API Key (Gemini)</label>
-                                    <button
-                                        onClick={() => setShowHelp(!showHelp)}
-                                        className="text-cyan-400 hover:text-cyan-300 text-[10px] flex items-center gap-1"
-                                    >
-                                        <HelpCircle size={12} />
-                                        ¿Cómo conseguirla?
-                                    </button>
-                                </div>
 
-                                {showHelp && (
-                                    <div className="bg-cyan-900/20 border border-cyan-500/30 p-2 rounded-lg mb-2 text-[10px] text-gray-300">
-                                        <p className="font-bold text-cyan-400 mb-1">¡Es GRATIS y fácil!</p>
-                                        <ol className="list-decimal list-inside space-y-1">
-                                            <li>Ve a <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-cyan-400 underline decoration-dashed">Google AI Studio</a>.</li>
-                                            <li>Logueate con tu cuenta Google.</li>
-                                            <li>Clic en <strong>Create API Key</strong>.</li>
-                                            <li>Copia la clave y pégala abajo.</li>
-                                        </ol>
-                                        <div className="mt-2 text-center">
-                                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="inline-block bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-1 rounded text-[10px] font-bold transition-colors">
-                                                Ir a Crear Key →
-                                            </a>
-                                        </div>
-                                    </div>
-                                )}
+                    <>
+                        {/* Input Area */}
+                        <div className="relative">
+                            <textarea
+                                ref={inputRef}
+                                value={manualInput}
+                                onChange={(e) => setManualInput(e.target.value)}
+                                placeholder="Describe tu tarea o comando..."
+                                className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-500/50 min-h-[100px] resize-y font-mono"
+                            />
 
-                                <input
-                                    type="password"
-                                    value={globalPreferences?.userApiKey || ""}
-                                    onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userApiKey: e.target.value }))}
-                                    placeholder="Pegar AIzaSy..."
-                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50"
-                                />
-                                <p className="text-[10px] text-gray-600 mt-1">Se guarda en tu navegador. No se comparte.</p>
-                            </div>
-                            <div>
-                                <label className="text-xs text-gray-500 mb-1 block">Modelo Preferido</label>
-                                <select
-                                    value={globalPreferences?.userModel || "gemini-2.0-flash-lite-001"}
-                                    onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userModel: e.target.value }))}
-                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50"
+                            {/* Magic Actions Bar */}
+                            <div className="flex justify-end gap-2 mt-2">
+                                <button
+                                    onClick={handleMagicWand}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/20 transition-all group"
+                                    title="Mejorar Prompt (Varita Mágica)"
                                 >
-                                    <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Rápido)</option>
-                                    <option value="gemini-2.0-flash">Gemini 2.0 Flash (Potente)</option>
-                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (Legacy)</option>
-                                    <option value="gemini-pro">Gemini Pro (Estándar)</option>
-                                </select>
+                                    <Wand2 size={14} className="group-hover:rotate-12 transition-transform" />
+                                    <span>Enhance</span>
+                                </button>
+
+                                <button
+                                    onClick={copyToClipboard}
+                                    className="p-1.5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                                    title="Copiar"
+                                >
+                                    <Copy size={14} />
+                                </button>
+
+                                <button
+                                    onClick={handleSend}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-bold border border-cyan-500/20 transition-all ml-auto"
+                                >
+                                    <Send size={14} />
+                                    <span>Ejecutar</span>
+                                </button>
                             </div>
                         </div>
-                    ) : (
-                        <>
-                            {/* Input Area */}
-                            <div className="relative">
-                                <textarea
-                                    ref={inputRef}
-                                    value={manualInput}
-                                    onChange={(e) => setManualInput(e.target.value)}
-                                    placeholder="Describe tu tarea o comando..."
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-500/50 min-h-[100px] resize-y font-mono"
-                                />
 
-                                {/* Magic Actions Bar */}
-                                <div className="flex justify-end gap-2 mt-2">
-                                    <button
-                                        onClick={handleMagicWand}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/20 transition-all group"
-                                        title="Mejorar Prompt (Varita Mágica)"
-                                    >
-                                        <Wand2 size={14} className="group-hover:rotate-12 transition-transform" />
-                                        <span>Enhance</span>
-                                    </button>
-
-                                    <button
-                                        onClick={copyToClipboard}
-                                        className="p-1.5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
-                                        title="Copiar"
-                                    >
-                                        <Copy size={14} />
-                                    </button>
-
-                                    <button
-                                        onClick={handleSend}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-bold border border-cyan-500/20 transition-all ml-auto"
-                                    >
-                                        <Send size={14} />
-                                        <span>Ejecutar</span>
-                                    </button>
-                                </div>
+                        {/* System Response */}
+                        {lastCommandResponse && (
+                            <div className="mt-2 text-xs font-mono text-emerald-400 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
+                                <span className="opacity-50 select-none">&gt; </span>{lastCommandResponse}
                             </div>
+                        )}
+                    </>
 
-                            {/* System Response */}
-                            {lastCommandResponse && (
-                                <div className="mt-2 text-xs font-mono text-emerald-400 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
-                                    <span className="opacity-50 select-none">&gt; </span>{lastCommandResponse}
-                                </div>
-                            )}
-                        </>
-                    )}
                 </div>
             )}
         </>

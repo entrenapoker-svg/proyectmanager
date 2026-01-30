@@ -150,14 +150,89 @@ const Dashboard = () => {
 
                 {/* Settings View */}
                 {activeView === 'settings' && (
-                    <div className="w-full bg-[#121214] border border-white/5 rounded-2xl p-8 flex flex-col items-center justify-center min-h-[400px] animate-fade-in-down">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 text-gray-500">
-                            <Settings size={32} />
+                    <div className="w-full bg-[#121214] border border-white/5 rounded-2xl p-8 animate-fade-in-down">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-400"><Settings size={20} /></div>
+                            Configuración del Sistema
+                        </h3>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="space-y-6">
+                                {/* AI Configuration Section */}
+                                <section className="p-6 bg-black/20 rounded-xl border border-white/5">
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Conexión IA (Gemini)</h4>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-400 mb-1.5 block">Tu API Key Personal</label>
+                                            <div className="flex gap-2 mb-2">
+                                                <input
+                                                    type="password"
+                                                    value={useProjects().globalPreferences?.userApiKey || ""}
+                                                    onChange={(e) => useProjects().setGlobalPreferences(prev => ({ ...prev, userApiKey: e.target.value }))}
+                                                    placeholder="AIzaSy..."
+                                                    className="flex-1 bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono"
+                                                />
+                                            </div>
+                                            <p className="text-[11px] text-gray-500">
+                                                ¿No tienes clave?{" "}
+                                                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">
+                                                    Consíguela GRATIS aquí
+                                                </a>. Se guarda localmente.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-400 mb-1.5 block">Modelo de IA</label>
+                                            <select
+                                                value={useProjects().globalPreferences?.userModel || "gemini-2.0-flash-lite-001"}
+                                                onChange={(e) => useProjects().setGlobalPreferences(prev => ({ ...prev, userModel: e.target.value }))}
+                                                className="w-full bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-cyan-500/50"
+                                            >
+                                                <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Recomendado)</option>
+                                                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Potente)</option>
+                                                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Estándar)</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="pt-4">
+                                            <button
+                                                onClick={() => {
+                                                    // Trigger a "save" simulation just for UX feedback, as context saves automatically
+                                                    const btn = document.getElementById('save-prefs-btn');
+                                                    if (btn) {
+                                                        const originalText = btn.innerText;
+                                                        btn.innerText = "¡Guardado!";
+                                                        btn.classList.add('bg-green-500', 'text-black', 'border-green-500');
+                                                        btn.classList.remove('bg-cyan-500/10', 'text-cyan-400');
+                                                        setTimeout(() => {
+                                                            btn.innerText = originalText;
+                                                            btn.classList.remove('bg-green-500', 'text-black', 'border-green-500');
+                                                            btn.classList.add('bg-cyan-500/10', 'text-cyan-400');
+                                                        }, 2000);
+                                                    }
+                                                }}
+                                                id="save-prefs-btn"
+                                                className="w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <CheckSquare size={16} />
+                                                Confirmar y Guardar Configuración
+                                            </button>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div className="space-y-6">
+                                {/* Other Settings Placeholders */}
+                                <section className="p-6 bg-black/20 rounded-xl border border-white/5 opacity-50">
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Apariencia (Próximamente)</h4>
+                                    <div className="h-24 flex items-center justify-center text-xs text-gray-600">
+                                        Personalización de temas y colores deshabilitada.
+                                    </div>
+                                </section>
+                            </div>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-2">Configuración del Sistema</h3>
-                        <p className="text-gray-500 text-center max-w-md">
-                            Panel de configuración global (Identidad, Preferencias, Conexiones API) en construcción.
-                        </p>
                     </div>
                 )}
             </div>
