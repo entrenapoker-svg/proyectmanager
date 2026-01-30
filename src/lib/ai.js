@@ -6,8 +6,8 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "YOU
 
 export const generateAIResponse = async (userMessage, context = "", projectTitle = "") => {
     try {
-        // Use gemini-2.0-flash as it is explicitly available in the user's model list
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        // Switching to gemini-2.0-flash-lite-001 to avoid rate limits on standard flash
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-001" });
 
         const prompt = `
         ACT AS AN EXPERT PROJECT MANAGER.
