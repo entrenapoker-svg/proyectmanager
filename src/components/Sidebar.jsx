@@ -94,35 +94,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     </div>
                 </nav>
 
-                {/* Gamification Widget (XP) */}
-                <div className="bg-[#121214] border border-white/5 rounded-xl p-4 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <span className="text-4xl text-yellow-500">⚡</span>
-                    </div>
 
-                    <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nivel Actual</span>
-                        <span className="text-xs font-bold text-yellow-400">Lvl {globalPreferences?.level || 1}</span>
-                    </div>
-
-                    <div className="flex items-end space-x-1 mb-3">
-                        <h3 className="text-2xl font-bold text-white tracking-tight leading-none">{globalPreferences?.xp || 0}</h3>
-                        <span className="text-[10px] text-gray-500 mb-1">XP Total</span>
-                    </div>
-
-                    <div className="space-y-1">
-                        <div className="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                            <div
-                                className="bg-yellow-500 h-full rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all duration-1000 ease-out"
-                                style={{ width: `${globalPreferences?.levelProgress || 0}%` }}
-                            ></div>
-                        </div>
-                        <div className="flex justify-between text-[9px] text-gray-600 font-mono">
-                            <span>0%</span>
-                            <span>{globalPreferences?.levelProgress || 0}% NEXT LVL</span>
-                        </div>
-                    </div>
-                </div>
 
                 <div className="pt-4 border-t border-white/5 mt-auto">
                     <LogoutButton onClick={() => setShowDebrief(true)} />

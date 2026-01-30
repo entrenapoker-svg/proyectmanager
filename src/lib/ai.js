@@ -13,8 +13,11 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
             if (savedPrefs) {
                 const parsed = JSON.parse(savedPrefs);
                 if (parsed.userApiKey && parsed.userApiKey.trim().length > 10) {
-                    apiKey = parsed.userApiKey;
-                    console.log("Using User Custom API Key");
+                    // Safety check: Ignore the leaked key to force user to input new one if they accidentally pasted the old one
+                    if (!parsed.userApiKey.includes("AIzaSyBwU_AqBYBzO6b7LeawntlKIzxk2Y0mNhw")) {
+                        apiKey = parsed.userApiKey;
+                        console.log("Using User Custom API Key");
+                    }
                 }
                 if (parsed.userModel) {
                     modelName = parsed.userModel;
