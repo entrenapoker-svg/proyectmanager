@@ -67,6 +67,56 @@ const Dashboard = () => {
         }
     };
 
+    const handleTestConnection = async (apiKey, model) => {
+        const btn = document.getElementById('save-prefs-btn');
+        const originalText = "Confirmar y Probar Configuración";
+
+        if (btn) {
+            btn.innerText = "⏳ Verificando con Google...";
+            btn.disabled = true;
+
+            try {
+                const result = await testConnection(apiKey, model);
+                console.log("Test Connection Result:", result);
+
+                if (result && result.success) {
+                    btn.innerText = "✅ ¡Conexión Exitosa!";
+                    btn.className = "w-full py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                        btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
+                    }, 3000);
+                } else {
+                    const errorMsg = result?.message || "Error desconocido";
+                    // Using prompt instead of alert to be less intrusive or just visually on button
+                    // But for now, let's keep it simple and just show on button if possible, but alert is needed for details
+                    // alert(`❌ Falló la prueba: ${errorMsg}`);
+
+                    btn.innerText = "❌ " + (errorMsg.length > 20 ? "Error (Ver Consola)" : errorMsg);
+                    btn.className = "w-full py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+
+                    // Also show a temporary error div or toast if we had one. 
+                    // Let's fallback to console warning to avoid blocking UI
+                    console.warn(errorMsg);
+
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                        btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
+                    }, 4000);
+                }
+            } catch (err) {
+                console.error("Dashboard Button Error:", err);
+                btn.innerText = "❌ Error Crítico";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }, 3000);
+            }
+        }
+    };
+
     return (
         <main className="flex-1 p-4 md:p-8 min-h-full bg-[#0a0a0b] relative pb-32">
             <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
@@ -184,50 +234,7 @@ const Dashboard = () => {
 
                                         <div className="pt-4">
                                             <button
-                                                onClick={async () => {
-                                                    const btn = document.getElementById('save-prefs-btn');
-                                                    const originalText = "Confirmar y Probar Configuración";
-
-                                                    try {
-                                                        const apiKey = globalPreferences?.userApiKey || "";
-                                                        const model = globalPreferences?.userModel || "gemini-2.0-flash-lite-001";
-
-                                                        if (btn) {
-                                                            btn.innerText = "⏳ Verificando con Google...";
-                                                            btn.disabled = true;
-
-                                                            const result = await testConnection(apiKey, model);
-                                                            console.log("Test Connection Result:", result);
-
-                                                            if (result && result.success) {
-                                                                btn.innerText = "✅ ¡Conexión Exitosa!";
-                                                                btn.className = "w-full py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
-                                                                setTimeout(() => {
-                                                                    btn.innerText = originalText;
-                                                                    btn.disabled = false;
-                                                                    btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
-                                                                }, 3000);
-                                                            } else {
-                                                                const errorMsg = result?.message || "Error desconocido";
-                                                                alert(`❌ Falló la prueba: ${errorMsg}`);
-                                                                btn.innerText = "❌ Error - Reintentar";
-                                                                btn.className = "w-full py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
-                                                                setTimeout(() => {
-                                                                    btn.innerText = originalText;
-                                                                    btn.disabled = false;
-                                                                    btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
-                                                                }, 4000);
-                                                            }
-                                                        }
-                                                    } catch (err) {
-                                                        console.error("Dashboard Button Error:", err);
-                                                        alert("Error interno: " + err.message);
-                                                        if (btn) {
-                                                            btn.disabled = false;
-                                                            btn.innerText = originalText;
-                                                        }
-                                                    }
-                                                }}
+                                                onClick={() => handleTestConnection(globalPreferences?.userApiKey, globalPreferences?.userModel)}
                                                 id="save-prefs-btn"
                                                 className="w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2"
                                             >
@@ -249,8 +256,9 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
+                )
+                }
+            </div >
 
             <ProjectModal
                 isOpen={isModalOpen}
@@ -259,7 +267,7 @@ const Dashboard = () => {
                 onSave={handleSave}
                 onDelete={deleteProject}
             />
-        </main>
+        </main >
     );
 };
 
