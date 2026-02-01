@@ -33,9 +33,15 @@ Se ha logrado una integración completa con Inteligencia Artificial Real y se ha
 *   Implementar sistema visual de **Experiencia (XP)** y Niveles.
 *   Recompensar al usuario por completar el "Protocolo Pre-Sesión" y el "Debrief".
 
-### C. Limpieza y Seguridad
-*   **Hotfix Revert:** Eliminar la API Key hardcodeada en `ai.js` una vez confirmado que la variable de entorno en Vercel funciona correctamente.
-*   Optimizar manejo de errores en la conexión IA para casos extremos (cortes de red).
+### C. Limpieza y Seguridad (COMPLETADO)
+*   [x] **API Key Segura:** Eliminada dependencia de variables de entorno globales. Ahora cada usuario usa su propia API Key almacenada localmente.
+*   [x] **Validación Estricta:** Implementado bloqueo de claves filtradas conocidas.
+*   [x] **UI Configuración:** Panel de control integrado en el Dashboard principal.
+
+## 4. Estado del Despliegue (Vercel)
+*   **Repo:** `https://github.com/entrenapoker-svg/proyectmanager`
+*   **Branch:** `main`
+*   **Nota:** Si los cambios no se reflejan, verificar la consola de Vercel por posibles errores de build, aunque el entorno local es estable.
 
 ---
 *Documento generado automáticamente por JAMA1 AI Agent.*
