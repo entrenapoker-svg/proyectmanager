@@ -73,21 +73,24 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
         return { text, suggestions };
 
     } catch (error) {
-        console.error("AI Configuration Error:", error);
+        console.error("AI Configuration Error FULL:", error);
 
-        let errorMsg = `(Error IA). Verifica tu conexión.`;
+        // Default detailed error
+        let errorMsg = `Error Técnico: ${error.message || error.toString()}`;
 
         if (error.message.includes("403") || error.message.includes("leaked")) {
-            errorMsg = "⛔ TU API KEY ESTÁ BLOQUEADA. Google detectó que se filtró. Ve a Configuración y pon una NUEVA.";
+            errorMsg = "⛔ TU API KEY ESTÁ BLOQUEADA O ES INCORRECTA. Google la rechazó (Error 403). Ve a Configuración y verifica que la copiaste bien.";
         } else if (error.message.includes("429")) {
-            errorMsg = "⏳ Cuota excedida (Rate Limit). Espera un momento o cambia de modelo en Configuración.";
+            errorMsg = "⏳ Cuota excedida (Rate Limit). Google está limitando las peticiones. Espera un poco.";
         } else if (error.message.includes("404")) {
-            errorMsg = "❌ Modelo no encontrado. Cambia el modelo en Configuración (ej. usa Flash Lite).";
+            errorMsg = "❌ Modelo no encontrado. El modelo seleccionado puede no estar disponible. Prueba 'gemini-1.5-flash' en Configuración.";
+        } else if (error.message.includes("API key not valid")) {
+            errorMsg = "🔑 La API Key no es válida. Asegúrate de haberla copiado completa (empieza por AIzaSy...).";
         }
 
         return {
             text: errorMsg,
-            suggestions: []
+            suggestions: ["Ir a Configuración", "Reintentar"]
         };
     }
 };
