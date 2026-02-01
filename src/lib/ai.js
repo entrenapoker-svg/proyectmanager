@@ -94,3 +94,24 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
         };
     }
 };
+
+export const testConnection = async (apiKey, modelName = "gemini-2.0-flash-lite-001") => {
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: modelName });
+
+        // Minimal token test
+        const result = await model.generateContent("Hello");
+        const response = await result.response;
+        const text = response.text();
+
+        return { success: true, message: "Validada correctamente" };
+    } catch (error) {
+        let msg = error.message || "Error desconocido";
+        if (msg.includes("403") || msg.includes("leaked")) msg = "Key Bloqueada/Filtrada";
+        if (msg.includes("400") || msg.includes("expired")) msg = "Key Expirada o Inválida";
+        if (msg.includes("404")) msg = "Modelo no disponible";
+
+        return { success: false, message: msg };
+    }
+};

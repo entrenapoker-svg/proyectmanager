@@ -7,9 +7,10 @@ import DailyPlanEditor from './DailyPlanEditor';
 import { useProjects } from '../context/ProjectContext';
 import { Plus, RefreshCw, CheckSquare, Settings, Trash2, X } from 'lucide-react';
 import { cn } from '../utils';
+import { testConnection } from '../lib/ai';
 
 const Dashboard = () => {
-    const { projects, reorderProjects, addProject, updateProject, deleteProject, generateDailyPlan, processCommand, activeView } = useProjects();
+    const { projects, reorderProjects, addProject, updateProject, deleteProject, generateDailyPlan, processCommand, activeView, globalPreferences, setGlobalPreferences } = useProjects();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
     const [selectedProjects, setSelectedProjects] = useState([]);
@@ -168,8 +169,8 @@ const Dashboard = () => {
                                             <div className="flex gap-2 mb-2">
                                                 <input
                                                     type="password"
-                                                    value={useProjects().globalPreferences?.userApiKey || ""}
-                                                    onChange={(e) => useProjects().setGlobalPreferences(prev => ({ ...prev, userApiKey: e.target.value }))}
+                                                    value={globalPreferences?.userApiKey || ""}
+                                                    onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userApiKey: e.target.value }))}
                                                     placeholder="AIzaSy..."
                                                     className="flex-1 bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono"
                                                 />
@@ -185,8 +186,8 @@ const Dashboard = () => {
                                         <div>
                                             <label className="text-xs font-bold text-gray-400 mb-1.5 block">Modelo de IA</label>
                                             <select
-                                                value={useProjects().globalPreferences?.userModel || "gemini-2.0-flash-lite-001"}
-                                                onChange={(e) => useProjects().setGlobalPreferences(prev => ({ ...prev, userModel: e.target.value }))}
+                                                value={globalPreferences?.userModel || "gemini-2.0-flash-lite-001"}
+                                                onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userModel: e.target.value }))}
                                                 className="w-full bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-cyan-500/50"
                                             >
                                                 <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Recomendado)</option>
@@ -197,26 +198,44 @@ const Dashboard = () => {
 
                                         <div className="pt-4">
                                             <button
-                                                onClick={() => {
-                                                    // Trigger a "save" simulation just for UX feedback, as context saves automatically
+                                                onClick={async () => {
                                                     const btn = document.getElementById('save-prefs-btn');
+                                                    // Use defaults from prefs
+                                                    const apiKey = globalPreferences?.userApiKey || "";
+                                                    const model = globalPreferences?.userModel || "gemini-2.0-flash-lite-001";
+
                                                     if (btn) {
-                                                        const originalText = btn.innerText;
-                                                        btn.innerText = "¡Guardado!";
-                                                        btn.classList.add('bg-green-500', 'text-black', 'border-green-500');
-                                                        btn.classList.remove('bg-cyan-500/10', 'text-cyan-400');
-                                                        setTimeout(() => {
-                                                            btn.innerText = originalText;
-                                                            btn.classList.remove('bg-green-500', 'text-black', 'border-green-500');
-                                                            btn.classList.add('bg-cyan-500/10', 'text-cyan-400');
-                                                        }, 2000);
+                                                        const originalText = "Confirmar y Probar Configuración";
+                                                        btn.innerText = "⏳ Verificando con Google...";
+                                                        btn.disabled = true;
+
+                                                        const result = await testConnection(apiKey, model);
+
+                                                        if (result.success) {
+                                                            btn.innerText = "✅ ¡Conexión Exitosa!";
+                                                            btn.className = "w-full py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+                                                            setTimeout(() => {
+                                                                btn.innerText = originalText;
+                                                                btn.disabled = false;
+                                                                btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
+                                                            }, 3000);
+                                                        } else {
+                                                            alert(`❌ Falló la prueba: ${result.message}`);
+                                                            btn.innerText = "❌ Error - Reintentar";
+                                                            btn.className = "w-full py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+                                                            setTimeout(() => {
+                                                                btn.innerText = originalText;
+                                                                btn.disabled = false;
+                                                                btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
+                                                            }, 4000);
+                                                        }
                                                     }
                                                 }}
                                                 id="save-prefs-btn"
                                                 className="w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2"
                                             >
                                                 <CheckSquare size={16} />
-                                                Confirmar y Guardar Configuración
+                                                Confirmar y Probar Configuración
                                             </button>
                                         </div>
                                     </div>
