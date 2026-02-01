@@ -89,12 +89,16 @@ const Dashboard = () => {
                     }, 3000);
                 } else {
                     const errorMsg = result?.message || "Error desconocido";
-                    // Using prompt instead of alert to be less intrusive or just visually on button
-                    // But for now, let's keep it simple and just show on button if possible, but alert is needed for details
-                    // alert(`❌ Falló la prueba: ${errorMsg}`);
 
-                    btn.innerText = "❌ " + (errorMsg.length > 20 ? "Error (Ver Consola)" : errorMsg);
-                    btn.className = "w-full py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+                    // Special handling for rate limit
+                    if (errorMsg.includes("429") || errorMsg.includes("Cuota") || errorMsg.includes("Esperar")) {
+                        btn.innerText = "⏳ " + errorMsg;
+                        btn.className = "w-full py-2 bg-amber-500/20 border border-amber-500/50 rounded-lg text-amber-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+                    } else {
+                        // Allow longer messages up to 50 chars (button is wide enough)
+                        btn.innerText = errorMsg.length > 50 ? "❌ Error (Ver Consola)" : ("❌ " + errorMsg);
+                        btn.className = "w-full py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+                    }
 
                     // Also show a temporary error div or toast if we had one. 
                     // Let's fallback to console warning to avoid blocking UI
@@ -104,7 +108,7 @@ const Dashboard = () => {
                         btn.innerText = originalText;
                         btn.disabled = false;
                         btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
-                    }, 4000);
+                    }, 5000); // 5 seconds wait before resetting
                 }
             } catch (err) {
                 console.error("Dashboard Button Error:", err);
