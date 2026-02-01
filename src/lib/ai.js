@@ -116,6 +116,7 @@ export const testConnection = async (apiKey, modelName = "gemini-2.0-flash-lite-
         msg = msg.toString();
 
         if (msg.includes("403") || msg.includes("leaked")) msg = "Key Bloqueada/Filtrada (403)";
+        if (msg.includes("429") || msg.includes("quota") || msg.includes("limit")) msg = "⏳ Límite de Cuota Excedido (429). Espera 1 min.";
         if (msg.includes("400") || msg.includes("expired") || msg.includes("API key expired")) msg = "❌ Key Expirada/Inválida (400). Crea una nueva.";
         if (msg.includes("404")) msg = "Modelo no disponible (404)";
         if (msg.includes("fetch failed")) msg = "Error de Red / Conexión";
