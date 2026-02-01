@@ -97,20 +97,28 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
 
 export const testConnection = async (apiKey, modelName = "gemini-2.0-flash-lite-001") => {
     try {
+        console.log("Testing connection with key ending in:", apiKey?.slice(-4));
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: modelName });
 
         // Minimal token test
         const result = await model.generateContent("Hello");
         const response = await result.response;
-        const text = response.text();
+        // Access text safely
+        const text = response.text ? response.text() : "Success";
 
         return { success: true, message: "Validada correctamente" };
     } catch (error) {
+        console.error("Test Connection Exception:", error);
+
         let msg = error.message || "Error desconocido";
-        if (msg.includes("403") || msg.includes("leaked")) msg = "Key Bloqueada/Filtrada";
-        if (msg.includes("400") || msg.includes("expired")) msg = "Key Expirada o Inválida";
-        if (msg.includes("404")) msg = "Modelo no disponible";
+        // Ensure string conversion
+        msg = msg.toString();
+
+        if (msg.includes("403") || msg.includes("leaked")) msg = "Key Bloqueada/Filtrada (403)";
+        if (msg.includes("400") || msg.includes("expired") || msg.includes("API key expired")) msg = "❌ Key Expirada/Inválida (400). Crea una nueva.";
+        if (msg.includes("404")) msg = "Modelo no disponible (404)";
+        if (msg.includes("fetch failed")) msg = "Error de Red / Conexión";
 
         return { success: false, message: msg };
     }

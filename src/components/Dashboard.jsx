@@ -26,16 +26,14 @@ const Dashboard = () => {
     const handleBulkDelete = async () => {
         if (!window.confirm(`¿Estás seguro de eliminar ${selectedProjects.length} proyectos seleccionados? Esta acción es irreversible.`)) return;
 
-        // Execute deletions sequentially to ensure stability
         for (const id of selectedProjects) {
             await deleteProject(id);
         }
         clearSelection();
     };
 
-    // DND Sensors (Touch/Mouse/Keyboard)
     const sensors = useSensors(
-        useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), // Require 8px movement to start drag
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
@@ -46,7 +44,6 @@ const Dashboard = () => {
         }
     };
 
-    // Alert System
     const alert = {
         type: 'warning',
         message: '⚠ ALERT: High variance detected in last Poker session. Review required.',
@@ -72,26 +69,20 @@ const Dashboard = () => {
 
     return (
         <main className="flex-1 p-4 md:p-8 min-h-full bg-[#0a0a0b] relative pb-32">
-            {/* Background Gradients / Glows */}
             <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-cyan-500/5 rounded-full blur-[120px]"></div>
                 <div className="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px]"></div>
             </div>
 
-            {/* Daily Plan Overlay Editor - triggered by state */}
             <DailyPlanEditor />
 
-            {/* Content Container */}
             <div className="relative z-10 w-full max-w-none">
-
-                {/* Alert Banner */}
                 {alert && (
                     <div className="w-full bg-orange-500/10 border border-orange-500/20 text-orange-200 px-4 py-2 rounded-lg mb-8 flex items-center animate-fade-in-down">
                         <span className="font-mono text-sm tracking-tight">{alert.message}</span>
                     </div>
                 )}
 
-                {/* Section Header */}
                 <div className="flex items-center justify-between mb-8">
                     <h2 className="text-xl font-bold text-white tracking-tight">Active Pillars</h2>
                     <div className="flex space-x-3">
@@ -112,8 +103,6 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Draggable Grid */}
-                {/* Draggable Grid (Overview / Projects) */}
                 {(activeView === 'overview' || activeView === 'projects') && (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={projects.map(p => p.id)} strategy={rectSortingStrategy}>
@@ -131,7 +120,6 @@ const Dashboard = () => {
                                         />
                                     ))}
 
-                                {/* Add New Card (Static) - Hide during selection mode to reduce clutter? -> No, keep it */}
                                 <button
                                     onClick={handleCreateNew}
                                     className={cn(
@@ -149,7 +137,6 @@ const Dashboard = () => {
                     </DndContext>
                 )}
 
-                {/* Settings View */}
                 {activeView === 'settings' && (
                     <div className="w-full bg-[#121214] border border-white/5 rounded-2xl p-8 animate-fade-in-down">
                         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
@@ -159,7 +146,6 @@ const Dashboard = () => {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div className="space-y-6">
-                                {/* AI Configuration Section */}
                                 <section className="p-6 bg-black/20 rounded-xl border border-white/5">
                                     <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Conexión IA (Gemini)</h4>
 
@@ -200,34 +186,45 @@ const Dashboard = () => {
                                             <button
                                                 onClick={async () => {
                                                     const btn = document.getElementById('save-prefs-btn');
-                                                    // Use defaults from prefs
-                                                    const apiKey = globalPreferences?.userApiKey || "";
-                                                    const model = globalPreferences?.userModel || "gemini-2.0-flash-lite-001";
+                                                    const originalText = "Confirmar y Probar Configuración";
 
-                                                    if (btn) {
-                                                        const originalText = "Confirmar y Probar Configuración";
-                                                        btn.innerText = "⏳ Verificando con Google...";
-                                                        btn.disabled = true;
+                                                    try {
+                                                        const apiKey = globalPreferences?.userApiKey || "";
+                                                        const model = globalPreferences?.userModel || "gemini-2.0-flash-lite-001";
 
-                                                        const result = await testConnection(apiKey, model);
+                                                        if (btn) {
+                                                            btn.innerText = "⏳ Verificando con Google...";
+                                                            btn.disabled = true;
 
-                                                        if (result.success) {
-                                                            btn.innerText = "✅ ¡Conexión Exitosa!";
-                                                            btn.className = "w-full py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
-                                                            setTimeout(() => {
-                                                                btn.innerText = originalText;
-                                                                btn.disabled = false;
-                                                                btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
-                                                            }, 3000);
-                                                        } else {
-                                                            alert(`❌ Falló la prueba: ${result.message}`);
-                                                            btn.innerText = "❌ Error - Reintentar";
-                                                            btn.className = "w-full py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
-                                                            setTimeout(() => {
-                                                                btn.innerText = originalText;
-                                                                btn.disabled = false;
-                                                                btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
-                                                            }, 4000);
+                                                            const result = await testConnection(apiKey, model);
+                                                            console.log("Test Connection Result:", result);
+
+                                                            if (result && result.success) {
+                                                                btn.innerText = "✅ ¡Conexión Exitosa!";
+                                                                btn.className = "w-full py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+                                                                setTimeout(() => {
+                                                                    btn.innerText = originalText;
+                                                                    btn.disabled = false;
+                                                                    btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
+                                                                }, 3000);
+                                                            } else {
+                                                                const errorMsg = result?.message || "Error desconocido";
+                                                                alert(`❌ Falló la prueba: ${errorMsg}`);
+                                                                btn.innerText = "❌ Error - Reintentar";
+                                                                btn.className = "w-full py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
+                                                                setTimeout(() => {
+                                                                    btn.innerText = originalText;
+                                                                    btn.disabled = false;
+                                                                    btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
+                                                                }, 4000);
+                                                            }
+                                                        }
+                                                    } catch (err) {
+                                                        console.error("Dashboard Button Error:", err);
+                                                        alert("Error interno: " + err.message);
+                                                        if (btn) {
+                                                            btn.disabled = false;
+                                                            btn.innerText = originalText;
                                                         }
                                                     }
                                                 }}
@@ -243,7 +240,6 @@ const Dashboard = () => {
                             </div>
 
                             <div className="space-y-6">
-                                {/* Other Settings Placeholders */}
                                 <section className="p-6 bg-black/20 rounded-xl border border-white/5 opacity-50">
                                     <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Apariencia (Próximamente)</h4>
                                     <div className="h-24 flex items-center justify-center text-xs text-gray-600">
@@ -256,7 +252,6 @@ const Dashboard = () => {
                 )}
             </div>
 
-            {/* Modal */}
             <ProjectModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
