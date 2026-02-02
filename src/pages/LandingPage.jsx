@@ -36,7 +36,7 @@ const LandingPage = () => {
                     </div>
                     <div>
                         <Link
-                            to={user ? "/" : "/login"}
+                            to={user ? "/app" : "/login"}
                             className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm font-bold transition-all flex items-center gap-2 group"
                         >
                             {user ? 'Ir al Dashboard' : 'Iniciar Sesión'}
@@ -63,7 +63,7 @@ const LandingPage = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link
-                            to={user ? "/" : "/login"}
+                            to={user ? "/app" : "/login"}
                             className="px-8 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-xl transition-all hover:scale-105 shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center gap-2"
                         >
                             <Layout size={18} />
