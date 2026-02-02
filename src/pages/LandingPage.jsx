@@ -52,14 +52,14 @@ const LandingPage = () => {
                 <div className="max-w-4xl mx-auto text-center relative z-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-xs font-bold mb-6 animate-fade-in-up">
                         <Sparkles size={12} />
-                        <span>SISTEMA OPERATIVO PARA POKER & VIDA</span>
+                        <span>TU SISTEMA DE PRODUCTIVIDAD PERSONAL</span>
                     </div>
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50">
                         Gestiona tu Caos.<br />
                         <span className="text-cyan-400">Domina tu Mente.</span>
                     </h1>
                     <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-                        Unifica tus proyectos, rutinas de Poker y gimnasio mental en una sola interfaz potenciada por Inteligencia Artificial.
+                        Organiza tus proyectos personales, trabajo freelance, estudios y metas de vida en una interfaz potenciada por Inteligencia Artificial.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link
@@ -177,7 +177,7 @@ const LandingPage = () => {
                                         </div>
                                         <ArrowRight className="text-gray-600" />
                                         <div className="text-sm font-mono text-gray-300">
-                                            "Crear tarea: Estudiar rangos de Open Raise"
+                                            "Crear tarea: Terminar presentación del lunes"
                                         </div>
                                     </div>
                                     <p className="text-xs text-gray-500">
@@ -196,7 +196,7 @@ const LandingPage = () => {
                                         </div>
                                         <div className="p-3 bg-black rounded-lg border border-white/10 text-xs font-mono text-gray-400 flex gap-3">
                                             <span className="text-purple-400">Prompt:</span>
-                                            <span>"Analiza mi última sesión de Poker y encuentra fugas mentales"</span>
+                                            <span>"Ayúdame a dividir este proyecto grande en tareas más pequeñas"</span>
                                         </div>
                                         <div className="p-3 bg-black rounded-lg border border-white/10 text-xs font-mono text-gray-400 flex gap-3">
                                             <span className="text-purple-400">Prompt:</span>
