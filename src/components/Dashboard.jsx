@@ -371,10 +371,41 @@ const Dashboard = () => {
                             </div>
 
                             <div className="space-y-6">
-                                <section className="p-6 bg-black/20 rounded-xl border border-white/5 opacity-50">
-                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Apariencia (Próximamente)</h4>
-                                    <div className="h-24 flex items-center justify-center text-xs text-gray-600">
-                                        Personalización de temas y colores deshabilitada.
+                                {/* Visual Preferences Section */}
+                                <section className={`p-6 ${theme.bgTertiary} rounded-xl border ${theme.border}`}>
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-700/50 pb-2 flex items-center gap-2">
+                                        <Palette size={16} /> Apariencia
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {Object.entries(themes).map(([key, t]) => (
+                                            <button
+                                                key={key}
+                                                onClick={() => setCurrentTheme(key)}
+                                                className={cn(
+                                                    "flex items-center gap-4 p-3 rounded-xl border transition-all duration-200",
+                                                    currentTheme === key
+                                                        ? `bg-cyan-500/10 border-cyan-500/50 ring-1 ring-cyan-500/50`
+                                                        : `${theme.bgSecondary} ${theme.border} hover:border-gray-500/50`
+                                                )}
+                                            >
+                                                <div className={`w-12 h-8 rounded-lg border shadow-sm flex overflow-hidden ${key === 'light' ? 'bg-gray-100 border-gray-300' : key === 'minimal' ? 'bg-white border-gray-200' : 'bg-[#0a0a0b] border-gray-800'}`}>
+                                                    <div className={`w-4 h-full ${key === 'light' ? 'bg-white border-r border-gray-300' : key === 'minimal' ? 'bg-gray-50 border-r border-gray-100' : 'bg-[#121214] border-r border-gray-800'}`}></div>
+                                                    <div className="flex-1 p-1 space-y-1">
+                                                        <div className={`h-1 w-3/4 rounded-full ${key === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                                                        <div className={`h-1 w-1/2 rounded-full ${key === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}></div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-left">
+                                                    <span className={`block text-sm font-bold ${currentTheme === key ? 'text-cyan-400' : theme.text}`}>
+                                                        {t.name}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-500">
+                                                        {key === 'dark' ? 'Para la noche' : key === 'light' ? 'Clásico' : 'Limpio y simple'}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        ))}
                                     </div>
                                 </section>
                             </div>
