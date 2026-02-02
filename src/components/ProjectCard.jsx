@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { cn } from '../utils'; // Util refactor
-import { Check, Edit2, Play, Trash2 } from 'lucide-react';
+import React from 'react';
+import { cn } from '../utils';
+import { Check, Edit2, Play, Trash2, CheckCircle2 } from 'lucide-react';
 import { useProjects } from '../context/ProjectContext';
 
 const ProjectCard = ({ project, onEdit, onDelete, isSelected, onToggleSelect }) => {
     const { title, status, progress, icon: Icon, color, tasks } = project;
-    const { toggleTask } = useProjects();
+    const { toggleTask, deleteCompletedTasks } = useProjects();
+
+    const completedCount = (tasks || []).filter(t => t.done).length;
 
     // Map color names to tailwind classes dynamically or static map
     const colorMap = {
@@ -127,6 +129,20 @@ const ProjectCard = ({ project, onEdit, onDelete, isSelected, onToggleSelect }) 
                         </span>
                     </div>
                 ))}
+
+                {/* Clear Completed Button */}
+                {completedCount > 0 && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            deleteCompletedTasks(project.id);
+                        }}
+                        className="mt-3 flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-emerald-400 transition-colors font-bold uppercase tracking-wide"
+                    >
+                        <CheckCircle2 size={12} />
+                        Limpiar {completedCount} completada{completedCount > 1 ? 's' : ''}
+                    </button>
+                )}
             </div>
         </div>
     );

@@ -354,6 +354,41 @@ export const ProjectProvider = ({ children }) => {
         }
     };
 
+    // Delete all completed tasks from a project
+    const deleteCompletedTasks = async (projectId) => {
+        const project = projects.find(p => p.id === projectId);
+        if (!project) return;
+
+        const completedTaskIds = (project.tasks || [])
+            .filter(t => t.done)
+            .map(t => t.id);
+
+        if (completedTaskIds.length === 0) return;
+
+        // Optimistic UI Update
+        setProjects(prev => prev.map(p => {
+            if (p.id === projectId) {
+                return {
+                    ...p,
+                    tasks: p.tasks.filter(t => !t.done)
+                };
+            }
+            return p;
+        }));
+
+        try {
+            const { error } = await supabase
+                .from('tasks')
+                .delete()
+                .in('id', completedTaskIds);
+
+            if (error) throw error;
+        } catch (error) {
+            console.error("Error deleting completed tasks:", error);
+            fetchProjects(); // Revert on error
+        }
+    };
+
     const generateDailyPlan = () => {
         const allPending = projects.flatMap(p =>
             (p.tasks || []).filter(t => !t.done).map(t => ({
@@ -464,6 +499,7 @@ export const ProjectProvider = ({ children }) => {
             deleteProject,
             addTask,
             toggleTask,
+            deleteCompletedTasks,
             processCommand,
             gainXP,
             generateDailyPlan,
