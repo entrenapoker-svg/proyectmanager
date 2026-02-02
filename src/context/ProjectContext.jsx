@@ -241,16 +241,18 @@ export const ProjectProvider = ({ children }) => {
 
                 if (taskError) throw taskError;
 
-                // B. Delete tasks that are no longer in the list (if we trust this is a full sync)
-                // ProjectModal sends the full authoritative list.
-                // We compare against current DB IDs.
-                // NOTE: Local ID is numeric timestamp, DB ID is usually UUID/Int. 
-                // If we assume the Modal preserves the real DB ID for existing tasks:
+                // B. Delete tasks logic (DISABLED TEMPORARILY FOR SAFETY)
+                // The user reported tasks disappearing. The ID comparison might be failing (Type mismatch?).
+                // We will skip deletion for now to ensure NO data loss occurs.
+
+                /* 
                 const idsToDelete = currentIds.filter(dbId => !incomingIds.includes(dbId));
+                console.log("Tasks Sync Debug:", { currentIds, incomingIds, idsToDelete });
 
                 if (idsToDelete.length > 0) {
-                    await supabase.from('tasks').delete().in('id', idsToDelete);
+                     await supabase.from('tasks').delete().in('id', idsToDelete);
                 }
+                */
             }
 
         } catch (error) {
