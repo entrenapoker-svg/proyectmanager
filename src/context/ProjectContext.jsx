@@ -227,13 +227,18 @@ export const ProjectProvider = ({ children }) => {
                 const incomingIds = updatedData.tasks.filter(t => t.id && typeof t.id === 'string').map(t => t.id); // Assuming DB IDs are UUIDs/strings. If local timestamp, it's new.
 
                 // A. Upsert (Update existing + Insert new)
-                const tasksToUpsert = updatedData.tasks.map(t => ({
-                    id: (t.id && typeof t.id === 'string') ? t.id : undefined, // Let DB generate ID if it's a temp timestamp
-                    project_id: id,
-                    text: t.text,
-                    done: t.done || false,
-                    details: t.details || ""
-                }));
+                // FIX: Generate UUID for new tasks since DB requires non-null ID
+                const tasksToUpsert = updatedData.tasks.map(t => {
+                    // If ID is a valid UUID string (from DB), keep it. Otherwise, generate new UUID.
+                    const isValidDbId = t.id && typeof t.id === 'string' && t.id.includes('-');
+                    return {
+                        id: isValidDbId ? t.id : crypto.randomUUID(), // Generate real UUID for new tasks
+                        project_id: id,
+                        text: t.text,
+                        done: t.done || false,
+                        details: t.details || ""
+                    };
+                });
 
                 const { error: taskError } = await supabase
                     .from('tasks')
