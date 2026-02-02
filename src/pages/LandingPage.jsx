@@ -32,7 +32,7 @@ const LandingPage = () => {
                                 <span className="font-bold text-xs text-white">J1</span>
                             </div>
                         </div>
-                        <span className="font-bold text-lg tracking-tight">JAMA1 <span className="text-cyan-400">CENTRAL</span></span>
+                        <span className="font-bold text-lg tracking-tight">Project <span className="text-cyan-400">Manager</span></span>
                     </div>
                     <div>
                         <Link
@@ -85,7 +85,7 @@ const LandingPage = () => {
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold mb-4">Centro de Comando 101</h2>
-                        <p className="text-gray-400">Domina las herramientas avanzadas de JAMA1 Central.</p>
+                        <p className="text-gray-400">Domina las herramientas avanzadas de Project Manager.</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -104,7 +104,7 @@ const LandingPage = () => {
                             </div>
 
                             <p className="text-gray-400 mb-6">
-                                Para activar el cerebro de JAMA1, necesitas una "llave" (API Key). El sistema soporta múltiples proveedores para máxima flexibilidad.
+                                Para activar el cerebro de Project Manager, necesitas una "llave" (API Key). El sistema soporta múltiples proveedores para máxima flexibilidad.
                             </p>
 
                             <ol className="space-y-4 relative z-10">
@@ -213,7 +213,7 @@ const LandingPage = () => {
 
             {/* Footer */}
             <footer className="py-8 border-t border-white/5 text-center text-gray-600 text-sm">
-                <p>&copy; 2026 JAMA1 Central System. All rights reserved.</p>
+                <p>&copy; 2026 Project Manager. All rights reserved.</p>
             </footer>
         </div>
     );

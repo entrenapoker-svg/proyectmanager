@@ -61,8 +61,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                         </div>
                     </div>
                     <div>
-                        <h2 className="text-sm font-bold text-white tracking-wide">jama1</h2>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">Administrator</p>
+                        <h2 className="text-sm font-bold text-white tracking-wide">Project Manager</h2>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">Dashboard</p>
                     </div>
                 </div>
 
