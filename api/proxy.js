@@ -36,8 +36,10 @@ export default async function handler(req, res) {
                 temperature: 0.7
             };
         } else if (provider === 'huggingface') {
-            // Updated to new router URL as api-inference is deprecated for some calls
-            url = `https://router.huggingface.co/hf-inference/models/${modelName}/v1/chat/completions`;
+            // Reverting to standard Inference API URL but keeping v1/chat structure
+            // The router.huggingface.co URL is often for dedicated endpoints requiring extra permissions.
+            // Public free tier should use the standard domain.
+            url = `https://api-inference.huggingface.co/models/${modelName}/v1/chat/completions`;
             requestBody = {
                 messages,
                 max_tokens: 1024,
