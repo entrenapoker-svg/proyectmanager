@@ -36,7 +36,8 @@ export default async function handler(req, res) {
                 temperature: 0.7
             };
         } else if (provider === 'huggingface') {
-            url = `https://api-inference.huggingface.co/models/${modelName}/v1/chat/completions`;
+            // Updated to new router URL as api-inference is deprecated for some calls
+            url = `https://router.huggingface.co/hf-inference/models/${modelName}/v1/chat/completions`;
             requestBody = {
                 messages,
                 max_tokens: 1024,
