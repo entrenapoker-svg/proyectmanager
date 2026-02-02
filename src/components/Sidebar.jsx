@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
-import { Home, Grid, CheckSquare, Settings, User, LogOut, Brain } from 'lucide-react';
+import { Home, Grid, CheckSquare, Settings, User, LogOut, Brain, HelpCircle, ShieldCheck } from 'lucide-react';
 import { cn } from '../utils';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProjects } from '../context/ProjectContext'; // Context Import
-import SessionDebrief from './SessionDebrief';
+
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { generateDailyPlan, activeView, setActiveView, globalPreferences } = useProjects(); // Use Context
+    const { signOut } = useAuth(); // Add useAuth hook
     const navigate = useNavigate();
     const location = useLocation();
-    const [showDebrief, setShowDebrief] = useState(false);
+
+    const handleLogout = async () => {
+        try {
+            await signOut();
+            navigate('/login');
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    };
 
     // Handle navigation click (close sidebar on mobile)
     const handleNavClick = (view) => {
@@ -29,7 +38,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     return (
         <>
-            <SessionDebrief isOpen={showDebrief} onClose={() => setShowDebrief(false)} />
+
 
             {/* Mobile Backdrop */}
             {isOpen && (
@@ -92,12 +101,28 @@ const Sidebar = ({ isOpen, onClose }) => {
                             onClick={() => navigate('/gym')}
                         />
                     </div>
+
+                    <div className="mt-2 px-0">
+                        <NavItem
+                            icon={HelpCircle}
+                            label="Ayuda / Guía"
+                            active={location.pathname === '/landing'}
+                            onClick={() => navigate('/landing')}
+                        />
+                        <NavItem
+                            icon={ShieldCheck}
+                            label="Admin Panel"
+                            active={location.pathname === '/admin'}
+                            onClick={() => navigate('/admin')}
+                            highlight
+                        />
+                    </div>
                 </nav>
 
 
 
                 <div className="pt-4 border-t border-white/5 mt-auto">
-                    <LogoutButton onClick={() => setShowDebrief(true)} />
+                    <LogoutButton onClick={handleLogout} />
                 </div>
             </aside>
         </>

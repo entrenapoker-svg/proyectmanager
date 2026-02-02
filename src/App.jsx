@@ -9,12 +9,12 @@ import Dashboard from './components/Dashboard';
 import MentalGym from './pages/MentalGym';
 import AIAssistant from './components/AIAssistant';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import LandingPage from './pages/LandingPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 const PrivateRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  const isDemo = localStorage.getItem('demo_mode') === 'true';
   if (loading) return null;
-  return (user || isDemo) ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/login" />;
 };
 
 function App() {
@@ -49,6 +49,14 @@ function App() {
           <ErrorBoundary>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/admin" element={
+                <PrivateRoute>
+                  <Layout>
+                    <AdminDashboard />
+                  </Layout>
+                </PrivateRoute>
+              } />
 
               <Route path="/" element={
                 <PrivateRoute>
