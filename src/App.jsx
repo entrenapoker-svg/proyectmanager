@@ -13,6 +13,7 @@ import LandingPage from './pages/LandingPage';
 import AdminDashboard from './pages/AdminDashboard';
 
 const PrivateRoute = ({ children }) => {
+  const { user, loading } = useAuth();
   if (loading) return null;
   return user ? children : <Navigate to="/login" />;
 };
