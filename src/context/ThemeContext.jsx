@@ -18,14 +18,14 @@ export const themes = {
     },
     light: {
         name: 'Light Mode',
-        bg: 'bg-gray-50',
+        bg: 'bg-[#f0f2f5]', // Softer gray-blue background
         bgSecondary: 'bg-white',
-        bgTertiary: 'bg-gray-100',
-        text: 'text-gray-900',
-        textSecondary: 'text-gray-600',
-        border: 'border-gray-200',
-        borderHover: 'hover:border-gray-300',
-        accent: 'blue',
+        bgTertiary: 'bg-[#f8f9fa]',
+        text: 'text-slate-800', // Softer dark text
+        textSecondary: 'text-slate-500',
+        border: 'border-slate-200',
+        borderHover: 'hover:border-slate-300',
+        accent: 'indigo',
     },
     minimal: {
         name: 'Minimal White',
