@@ -1,115 +1,43 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// --- GROQ API HELPER ---
-const generateGroqResponse = async (apiKey, modelName, messages) => {
+// --- PROXY HELPER (Solves CORS) ---
+const callAIProxy = async (provider, apiKey, modelName, messages) => {
     try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const response = await fetch("/api/proxy", {
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                messages: messages,
-                model: modelName,
-                temperature: 0.7
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ provider, apiKey, modelName, messages })
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Groq API Error: ${errorData.error?.message || response.statusText}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Proxy Error ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
-        return data.choices[0]?.message?.content || "";
+
+        // Response Parsing Strategy
+        if (provider === 'cohere') {
+            return data.text || "";
+        }
+        // Groq & Hugging Face (OpenAI Compatible)
+        return data.choices?.[0]?.message?.content || "";
+
     } catch (error) {
+        console.error(`${provider} Proxy Error:`, error);
         throw error;
     }
 };
 
-// --- HUGGING FACE API HELPER ---
-const generateHuggingFaceResponse = async (apiKey, modelName, messages) => {
-    try {
-        // Use the strictly standardized v1/chat/completions endpoint supported by TGI and Inference API
-        const response = await fetch(`https://api-inference.huggingface.co/models/${modelName}/v1/chat/completions`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                messages: messages, // Send standard messages array
-                max_tokens: 1024,
-                temperature: 0.7,
-                stream: false
-            })
-        });
+// --- GROQ ---
+const generateGroqResponse = (apiKey, modelName, messages) => callAIProxy('groq', apiKey, modelName, messages);
 
-        if (!response.ok) {
-            const errorText = await response.text();
+// --- HUGGING FACE ---
+const generateHuggingFaceResponse = (apiKey, modelName, messages) => callAIProxy('huggingface', apiKey, modelName, messages);
 
-            // Fallback: If chat/completions not supported (404), try legacy raw prompt
-            if (response.status === 404) {
-                return await generateHuggingFaceLegacyResponse(apiKey, modelName, messages);
-            }
-            throw new Error(`HuggingFace API Error: ${errorText}`);
-        }
-
-        const data = await response.json();
-        return data.choices[0]?.message?.content || "";
-    } catch (error) {
-        throw error;
-    }
-};
-
-// Fallback for older models on HF
-const generateHuggingFaceLegacyResponse = async (apiKey, modelName, messages) => {
-    const systemMsg = messages.find(m => m.role === 'system')?.content || "";
-    const userMsg = messages.find(m => m.role === 'user')?.content || "";
-    const fullPrompt = `System: ${systemMsg}\nUser: ${userMsg}\nAssistant:`;
-
-    const response = await fetch(`https://api-inference.huggingface.co/models/${modelName}`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ inputs: fullPrompt, parameters: { max_new_tokens: 1024 } })
-    });
-    const data = await response.json();
-    return Array.isArray(data) ? data[0]?.generated_text : data?.generated_text || "";
-};
-
-// --- COHERE API HELPER ---
-const generateCohereResponse = async (apiKey, modelName, messages) => {
-    try {
-        const systemMsg = messages.find(m => m.role === 'system')?.content || "";
-        const userMsg = messages.find(m => m.role === 'user')?.content || "";
-
-        const response = await fetch("https://api.cohere.ai/v1/chat", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: userMsg,
-                model: modelName,
-                preamble: systemMsg,
-                temperature: 0.7
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Cohere API Error: ${errorData.message || response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data.text || "";
-    } catch (error) {
-        throw error;
-    }
-};
+// --- COHERE ---
+const generateCohereResponse = (apiKey, modelName, messages) => callAIProxy('cohere', apiKey, modelName, messages);
 
 // --- MAIN AI HANDLER ---
 export const generateAIResponse = async (userMessage, context = "", projectTitle = "") => {
