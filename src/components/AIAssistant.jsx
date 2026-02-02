@@ -69,25 +69,15 @@ const AIAssistant = () => {
     const handleMagicWand = () => {
         if (!manualInput.trim()) return;
 
-        // "Consultar Internamente" logic: Use Global Preferences Identity
-        const identity = globalPreferences?.identity || "Experto en Productividad y Poker";
-        const style = globalPreferences?.style || "Directo y técnico";
+        // Simplified Logic: Improve structure without exposing System Metadata (handled by backend now)
+        const polished = `Tarea: Análisis Experto
+Consulta: "${manualInput}"
 
-        // Logic to construct a "Well-Made Prompt"
-        const optimizedPrompt = `[ACT AS: ${identity}]
-[TONE: ${style}]
-[OBJECTIVE: Comprehensive Analysis]
+Requisitos:
+1. Respuesta técnica y directa.
+2. Formato paso a paso.`;
 
-QUERY: "${manualInput}"
-
-INSTRUCTIONS:
-1. Analyze the request based on the user's profile.
-2. Provide a structured, step-by-step solution.
-3. Focus on high-value actionable advice.`;
-
-        setManualInput(optimizedPrompt);
-
-        // Pulse effect or notification could go here
+        setManualInput(polished);
     };
 
     const handleSend = () => {
@@ -127,7 +117,7 @@ INSTRUCTIONS:
                     <div className="flex justify-between items-center border-b border-white/5 pb-2">
                         <div className="flex items-center space-x-2">
                             <Sparkles size={16} className="text-cyan-400" />
-                            <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">JAMA1 AI Console</span>
+                            <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Asistente por Voz</span>
                         </div>
                         <button onClick={() => setIsExpanded(false)} className="text-gray-500 hover:text-white">
                             <X size={14} />
@@ -154,7 +144,7 @@ INSTRUCTIONS:
                                     title="Mejorar Prompt (Varita Mágica)"
                                 >
                                     <Wand2 size={14} className="group-hover:rotate-12 transition-transform" />
-                                    <span>Enhance</span>
+                                    <span>Optimizar</span>
                                 </button>
 
                                 <button
