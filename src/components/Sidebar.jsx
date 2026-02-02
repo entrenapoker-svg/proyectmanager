@@ -3,12 +3,13 @@ import { Home, Grid, CheckSquare, Settings, User, LogOut, HelpCircle, ShieldChec
 import { cn } from '../utils';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useProjects } from '../context/ProjectContext'; // Context Import
-
+import { useProjects } from '../context/ProjectContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Sidebar = ({ isOpen, onClose }) => {
-    const { generateDailyPlan, activeView, setActiveView, globalPreferences } = useProjects(); // Use Context
-    const { signOut } = useAuth(); // Add useAuth hook
+    const { generateDailyPlan, activeView, setActiveView } = useProjects();
+    const { theme } = useTheme();
+    const { signOut } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -21,7 +22,6 @@ const Sidebar = ({ isOpen, onClose }) => {
         }
     };
 
-    // Handle navigation click (close sidebar on mobile)
     const handleNavClick = (view) => {
         setActiveView(view);
         if (window.innerWidth < 768) {
@@ -38,8 +38,6 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     return (
         <>
-
-
             {/* Mobile Backdrop */}
             {isOpen && (
                 <div
@@ -50,7 +48,9 @@ const Sidebar = ({ isOpen, onClose }) => {
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-50 w-64 border-r border-white/5 bg-[#0a0a0b] flex flex-col p-4 space-y-8 transition-transform duration-300 md:translate-x-0 md:static md:h-screen",
+                `fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col p-4 space-y-8 transition-transform duration-300 md:translate-x-0 md:static md:h-screen`,
+                theme.bg,
+                theme.border,
                 isOpen ? "translate-x-0 shadow-2xl shadow-cyan-500/20" : "-translate-x-full"
             )}>
                 {/* Profile/User Section */}
@@ -61,38 +61,39 @@ const Sidebar = ({ isOpen, onClose }) => {
                         </div>
                     </div>
                     <div>
-                        <h2 className="text-sm font-bold text-white tracking-wide">Project Manager</h2>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">Dashboard</p>
+                        <h2 className={`text-sm font-bold tracking-wide ${theme.text}`}>Project Manager</h2>
+                        <p className={`text-[10px] uppercase tracking-widest ${theme.textSecondary}`}>Dashboard</p>
                     </div>
                 </div>
 
                 {/* Navigation */}
                 <nav className="flex-1 space-y-1">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mb-2">Navegación</p>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest px-2 mb-2 ${theme.textSecondary}`}>Navegación</p>
 
                     <NavItem
                         icon={Home}
                         label="Overview"
                         active={activeView === 'overview' && location.pathname === '/app'}
                         onClick={() => { navigate('/app'); handleNavClick('overview'); }}
+                        theme={theme}
                     />
                     <NavItem
                         icon={Grid}
                         label="Proyectos (IA)"
                         active={activeView === 'projects'}
                         onClick={() => handleNavClick('projects')}
+                        theme={theme}
                     />
                     <NavItem
                         icon={Settings}
                         label="Configuración"
                         active={activeView === 'settings'}
                         onClick={() => handleNavClick('settings')}
+                        theme={theme}
                     />
 
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mt-6 mb-2">Acción</p>
-                    <NavItem icon={CheckSquare} label="Tareas para Hoy" highlight onClick={handleActionClick} />
-
-
+                    <p className={`text-[10px] font-bold uppercase tracking-widest px-2 mt-6 mb-2 ${theme.textSecondary}`}>Acción</p>
+                    <NavItem icon={CheckSquare} label="Tareas para Hoy" highlight onClick={handleActionClick} theme={theme} />
 
                     <div className="mt-2 px-0">
                         <NavItem
@@ -100,6 +101,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                             label="Ayuda / Guía"
                             active={location.pathname === '/landing'}
                             onClick={() => navigate('/landing')}
+                            theme={theme}
                         />
                         <NavItem
                             icon={ShieldCheck}
@@ -107,13 +109,12 @@ const Sidebar = ({ isOpen, onClose }) => {
                             active={location.pathname === '/admin'}
                             onClick={() => navigate('/admin')}
                             highlight
+                            theme={theme}
                         />
                     </div>
                 </nav>
 
-
-
-                <div className="pt-4 border-t border-white/5 mt-auto">
+                <div className={`pt-4 border-t mt-auto ${theme.border}`}>
                     <LogoutButton onClick={handleLogout} />
                 </div>
             </aside>
@@ -121,7 +122,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     );
 };
 
-const NavItem = ({ icon: Icon, label, active, highlight, onClick }) => {
+const NavItem = ({ icon: Icon, label, active, highlight, onClick, theme }) => {
     return (
         <a
             href="#"
@@ -129,8 +130,8 @@ const NavItem = ({ icon: Icon, label, active, highlight, onClick }) => {
             className={cn(
                 "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group relative overflow-hidden",
                 active
-                    ? "bg-white/5 text-white"
-                    : "text-gray-400 hover:text-white hover:bg-white/5",
+                    ? "bg-cyan-500/10 text-cyan-400 font-bold"
+                    : `${theme.textSecondary} hover:${theme.text} hover:bg-gray-500/10`,
                 highlight && "text-emerald-400 hover:text-emerald-300 bg-emerald-500/5 border border-emerald-500/10 hover:bg-emerald-500/10"
             )}
         >
@@ -145,7 +146,6 @@ const NavItem = ({ icon: Icon, label, active, highlight, onClick }) => {
 };
 
 const LogoutButton = ({ onClick }) => {
-    // Session Debrief trigger
     return (
         <button
             onClick={onClick}

@@ -8,9 +8,12 @@ import { useProjects } from '../context/ProjectContext';
 import { Plus, RefreshCw, CheckSquare, Settings, Trash2, X } from 'lucide-react';
 import { cn } from '../utils';
 import { testConnection } from '../lib/ai';
+import { useTheme } from '../context/ThemeContext'; // Import Theme Context
+import { Palette } from 'lucide-react';
 
 const Dashboard = () => {
     const { projects, reorderProjects, addProject, updateProject, deleteProject, generateDailyPlan, processCommand, activeView, globalPreferences, setGlobalPreferences } = useProjects();
+    const { currentTheme, setCurrentTheme, themes, theme } = useTheme(); // Use Theme
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
     const [selectedProjects, setSelectedProjects] = useState([]);

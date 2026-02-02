@@ -3,10 +3,12 @@ import { Wifi, Battery, Menu, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const TopBar = ({ onMenuClick }) => {
     const [time, setTime] = useState(new Date());
     const { user } = useAuth();
+    const { theme } = useTheme();
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
@@ -14,7 +16,7 @@ const TopBar = ({ onMenuClick }) => {
     }, []);
 
     return (
-        <header className="h-14 sticky top-0 z-40 bg-[#0a0a0b]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 transition-all duration-300 w-full">
+        <header className={`h-14 sticky top-0 z-40 backdrop-blur-md border-b flex items-center justify-between px-6 transition-all duration-300 w-full ${theme.bgSecondary}/80 ${theme.border}`}>
             {/* Left: Hamburger (Mobile) & User Info */}
             <div className="flex items-center space-x-4">
                 <button
@@ -26,11 +28,11 @@ const TopBar = ({ onMenuClick }) => {
 
                 {/* User Display */}
                 {user && (
-                    <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                    <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border ${theme.bgTertiary} ${theme.border}`}>
                         <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center">
                             <User size={12} className="text-white" />
                         </div>
-                        <span className="text-xs text-gray-300 font-medium hidden sm:inline">
+                        <span className={`text-xs font-medium hidden sm:inline ${theme.textSecondary}`}>
                             {user.email}
                         </span>
                     </div>
@@ -45,15 +47,15 @@ const TopBar = ({ onMenuClick }) => {
             {/* Right: Clock & System */}
             <div className="flex items-center space-x-6">
                 <div className="text-right hidden sm:block">
-                    <p className="text-xs text-gray-400 uppercase font-medium tracking-wide">
+                    <p className={`text-xs uppercase font-medium tracking-wide ${theme.textSecondary}`}>
                         {format(time, "EEEE, d 'de' MMMM", { locale: es })}
                     </p>
                 </div>
-                <div className="h-4 w-px bg-white/10 hidden sm:block"></div>
-                <div className="font-mono text-xl font-bold text-white tracking-widest text-shadow-glow">
+                <div className={`h-4 w-px hidden sm:block ${theme.border} bg-gray-500/20`}></div>
+                <div className={`font-mono text-xl font-bold tracking-widest text-shadow-glow ${theme.text}`}>
                     {format(time, "HH:mm:ss")}
                 </div>
-                <div className="flex items-center space-x-3 text-gray-500">
+                <div className={`flex items-center space-x-3 ${theme.textSecondary}`}>
                     <Wifi size={16} />
                 </div>
             </div>
