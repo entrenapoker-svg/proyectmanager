@@ -3,9 +3,12 @@ import { cn } from '../utils';
 import { Check, Edit2, Play, Trash2, CheckCircle2 } from 'lucide-react';
 import { useProjects } from '../context/ProjectContext';
 
+import { useTheme } from '../context/ThemeContext';
+
 const ProjectCard = ({ project, onEdit, onDelete, isSelected, onToggleSelect }) => {
     const { title, status, progress, icon: Icon, color, tasks } = project;
     const { toggleTask, deleteCompletedTasks } = useProjects();
+    const { theme: appTheme } = useTheme();
 
     const completedCount = (tasks || []).filter(t => t.done).length;
 
@@ -44,8 +47,9 @@ const ProjectCard = ({ project, onEdit, onDelete, isSelected, onToggleSelect }) 
 
     return (
         <div className={cn(
-            "group relative bg-[#121214] rounded-xl p-5 border transition-all duration-300",
-            isSelected ? "border-cyan-500 bg-cyan-500/5 ring-1 ring-cyan-500/50 translate-y-[-4px]" : "border-white/5 hover:-translate-y-1 " + theme.border,
+            "group relative rounded-xl p-5 border transition-all duration-300",
+            appTheme.bgSecondary, // Dynamic theme background
+            isSelected ? `border-cyan-500 ${appTheme.bgTertiary} ring-1 ring-cyan-500/50 translate-y-[-4px]` : `${appTheme.border} hover:-translate-y-1 ${theme.border}`,
             theme.glow
         )}>
 
@@ -88,7 +92,7 @@ const ProjectCard = ({ project, onEdit, onDelete, isSelected, onToggleSelect }) 
                         <DisplayIcon size={20} />
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-100 text-sm">{title}</h3>
+                        <h3 className={`font-bold text-sm ${appTheme.text}`}>{title}</h3>
                         <span className={cn("text-[10px] uppercase font-bold tracking-wider opacity-80", theme.text)}>
                             {status}
                         </span>
@@ -106,41 +110,54 @@ const ProjectCard = ({ project, onEdit, onDelete, isSelected, onToggleSelect }) 
             </div>
 
             {/* Mini Tasks */}
-            <div className="space-y-2">
-                {tasks.map((task) => (
+            <div className="space-y-2 mb-2">
+                {tasks.slice(0, 3).map((task) => (
                     <div key={task.id} className="flex items-start space-x-2">
                         <button
-                            onClick={() => toggleTask(project.id, task.id)}
+                            onClick={(e) => { e.stopPropagation(); toggleTask(project.id, task.id); }}
                             className={cn(
-                                "w-4 h-4 rounded border flex items-center justify-center mt-0.5 transition-colors cursor-pointer",
+                                "w-4 h-4 rounded border flex items-center justify-center mt-0.5 transition-colors cursor-pointer flex-shrink-0",
                                 task.done
                                     ? cn("border-transparent text-black", theme.bg)
-                                    : "border-gray-600 bg-transparent hover:border-gray-400"
+                                    : `border-gray-400/50 bg-transparent hover:${theme.border}`
                             )}>
                             {task.done && <Check size={10} strokeWidth={4} />}
                         </button>
                         <span className={cn(
-                            "text-xs leading-5 select-none cursor-pointer",
-                            task.done ? "text-gray-500 line-through" : "text-gray-300"
+                            "text-xs leading-5 select-none cursor-pointer truncate",
+                            task.done ? "text-gray-500 line-through" : appTheme.textSecondary
                         )}
-                            onClick={() => toggleTask(project.id, task.id)}
+                            onClick={(e) => { e.stopPropagation(); toggleTask(project.id, task.id); }}
                         >
                             {task.text}
                         </span>
                     </div>
                 ))}
+            </div>
 
-                {/* Clear Completed Button */}
+            {/* Footer: See More & Clear Completed */}
+            <div className={`flex items-center justify-between pt-3 border-t ${appTheme.border}`}>
+                <div className="flex items-center gap-2">
+                    {tasks.length > 3 && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onEdit(project); }}
+                            className="text-[10px] text-gray-500 hover:text-cyan-400 transition-colors font-medium flex items-center gap-1"
+                        >
+                            <span>+{tasks.length - 3} tareas...</span>
+                        </button>
+                    )}
+                </div>
+
                 {completedCount > 0 && (
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             deleteCompletedTasks(project.id);
                         }}
-                        className="mt-3 flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-emerald-400 transition-colors font-bold uppercase tracking-wide"
+                        className="flex items-center gap-1.5 text-[10px] text-gray-400 hover:text-emerald-400 transition-colors font-bold uppercase tracking-wide ml-auto"
                     >
                         <CheckCircle2 size={12} />
-                        Limpiar {completedCount} completada{completedCount > 1 ? 's' : ''}
+                        Limpiar ({completedCount})
                     </button>
                 )}
             </div>
