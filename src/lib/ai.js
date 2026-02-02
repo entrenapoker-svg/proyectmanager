@@ -29,13 +29,85 @@ const generateGroqResponse = async (apiKey, modelName, messages) => {
     }
 };
 
+// --- HUGGING FACE API HELPER ---
+const generateHuggingFaceResponse = async (apiKey, modelName, messages) => {
+    try {
+        // HF Inference API usually takes a simple prompt string for some models, or messages for chat models.
+        // We will use the v1/chat/completions compatible endpoint if available, but standard Inference API is more reliable for free tier.
+        // Let's use the standard Inference API with a simple prompt construction.
+
+        const systemMsg = messages.find(m => m.role === 'system')?.content || "";
+        const userMsg = messages.find(m => m.role === 'user')?.content || "";
+        const fullPrompt = `<|system|>\n${systemMsg}\n<|user|>\n${userMsg}\n<|assistant|>\n`;
+
+        const response = await fetch(`https://api-inference.huggingface.co/models/${modelName}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                inputs: fullPrompt,
+                parameters: {
+                    max_new_tokens: 1024,
+                    temperature: 0.7,
+                    return_full_text: false
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HuggingFace API Error: ${errorText}`);
+        }
+
+        const data = await response.json();
+        // HF returns array of objects, usually [{ generated_text: "..." }]
+        return Array.isArray(data) ? data[0]?.generated_text : data?.generated_text || "";
+    } catch (error) {
+        throw error;
+    }
+};
+
+// --- COHERE API HELPER ---
+const generateCohereResponse = async (apiKey, modelName, messages) => {
+    try {
+        const systemMsg = messages.find(m => m.role === 'system')?.content || "";
+        const userMsg = messages.find(m => m.role === 'user')?.content || "";
+
+        const response = await fetch("https://api.cohere.ai/v1/chat", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: userMsg,
+                model: modelName,
+                preamble: systemMsg,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Cohere API Error: ${errorData.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.text || "";
+    } catch (error) {
+        throw error;
+    }
+};
+
 // --- MAIN AI HANDLER ---
 export const generateAIResponse = async (userMessage, context = "", projectTitle = "") => {
     try {
         // 1. Get User Preferences from LocalStorage
         let apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-        let modelName = "gemini-2.0-flash-lite-001";
-        let provider = "gemini"; // Default to Gemini
+        let modelName = "gemini-1.5-flash"; // Default to a stable model
+        let provider = "gemini";
 
         try {
             const savedPrefs = localStorage.getItem('jama1_global_prefs');
@@ -47,7 +119,7 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
                 }
 
                 // Priority: User Custom Key > Env Key
-                if (parsed.userApiKey && parsed.userApiKey.trim().length > 10) {
+                if (parsed.userApiKey && parsed.userApiKey.trim().length > 5) {
                     apiKey = parsed.userApiKey.trim();
                 }
 
@@ -80,15 +152,17 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
         `;
 
         let text = "";
+        const messages = [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage }
+        ];
 
         if (provider === 'groq') {
-            // --- GROQ EXECUTION ---
-            const messages = [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userMessage }
-            ];
             text = await generateGroqResponse(apiKey, modelName, messages);
-
+        } else if (provider === 'huggingface') {
+            text = await generateHuggingFaceResponse(apiKey, modelName, messages);
+        } else if (provider === 'cohere') {
+            text = await generateCohereResponse(apiKey, modelName, messages);
         } else {
             // --- GEMINI EXECUTION (Default) ---
             const dynamicGenAI = new GoogleGenerativeAI(apiKey);
@@ -118,12 +192,14 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
         const msgLow = errorMsg.toLowerCase();
         if (msgLow.includes("403") || msgLow.includes("leaked") || msgLow.includes("permission denied")) {
             errorMsg = "⛔ API Key Bloqueada o Incorrecta. Verifica tu clave en configuración.";
-        } else if (msgLow.includes("429") || msgLow.includes("quota") || msgLow.includes("rate limit")) {
-            errorMsg = "⏳ Cuota excedida (Rate Limit). El proveedor está limitando las peticiones. Espera un momento.";
-        } else if (msgLow.includes("404") || msgLow.includes("not found")) {
-            errorMsg = "❌ Modelo no encontrado. El modelo seleccionado puede no estar disponible.";
+        } else if (msgLow.includes("429") || msgLow.includes("quota") || msgLow.includes("rate limit") || msgLow.includes("limit")) {
+            errorMsg = "⏳ Cuota excedida (Rate Limit). El proveedor está limitando las peticiones. Espera un momento o cambia de proveedor.";
+        } else if (msgLow.includes("404") || msgLow.includes("not found") || msgLow.includes("decommissioned")) {
+            errorMsg = "❌ Modelo no disponible o retirado. Selecciona otro modelo en Configuración.";
         } else if (msgLow.includes("401") || msgLow.includes("unauthorized")) {
             errorMsg = "🔑 API Key Inválida (401). Verifica que sea correcta para el proveedor seleccionado.";
+        } else if (msgLow.includes("loading")) {
+            errorMsg = "⏳ El modelo se está cargando en el servidor (Cold Boot). Intenta de nuevo en 30s.";
         }
 
         return {
@@ -133,17 +209,23 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
     }
 };
 
-export const testConnection = async (apiKey, modelName = "gemini-2.0-flash-lite-001", provider = "gemini") => {
+export const testConnection = async (apiKey, modelName, provider = "gemini") => {
     try {
         console.log(`Testing connection | Provider: ${provider} | Key ending: ...${apiKey?.slice(-4)}`);
 
         if (provider === 'groq') {
             await generateGroqResponse(apiKey, modelName, [{ role: "user", content: "Hello" }]);
             return { success: true, message: "Conexión con Groq Exitosa" };
+        } else if (provider === 'huggingface') {
+            await generateHuggingFaceResponse(apiKey, modelName, [{ role: "user", content: "Hello" }]);
+            return { success: true, message: "Conexión con Hugging Face Exitosa" };
+        } else if (provider === 'cohere') {
+            await generateCohereResponse(apiKey, modelName, [{ role: "user", content: "Hello" }]);
+            return { success: true, message: "Conexión con Cohere Exitosa" };
         } else {
             // Gemini Test
             const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: modelName });
+            const model = genAI.getGenerativeModel({ model: modelName || "gemini-1.5-flash" });
             const result = await model.generateContent("Hello");
             const response = await result.response;
             const text = response.text ? response.text() : "Success";
@@ -159,8 +241,8 @@ export const testConnection = async (apiKey, modelName = "gemini-2.0-flash-lite-
 
         if (msgLow.includes("403") || msgLow.includes("leaked")) msg = "Key Bloqueada/Filtrada (403)";
         if (msgLow.includes("429") || msgLow.includes("quota") || msgLow.includes("limit")) msg = "⏳ Límite de Cuota Excedido (429). Espera 1 min.";
-        if (msgLow.includes("401") || msgLow.includes("unauthorized") || msgLow.includes("invalid api key")) msg = "❌ Key Inválida (401).";
-        if (msgLow.includes("404")) msg = "Modelo no disponible (404)";
+        if (msgLow.includes("401") || msgLow.includes("unauthorized") || msgLow.includes("invalid api key")) msg = "❌ Key Inválida (401). Verifica que la copiaste bien.";
+        if (msgLow.includes("404") || msgLow.includes("not found") || msgLow.includes("decommissioned")) msg = "❌ Modelo retirado/no existe. Cambia el modelo.";
         if (msgLow.includes("fetch failed")) msg = "Error de Red / Conexión";
 
         return { success: false, message: msg };

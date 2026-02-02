@@ -201,7 +201,7 @@ const Dashboard = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div className="space-y-6">
                                 <section className="p-6 bg-black/20 rounded-xl border border-white/5">
-                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Conexión IA</h4>
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Conexión IA Multi-Proveedor</h4>
 
                                     <div className="space-y-4">
                                         {/* Provider Selector */}
@@ -211,7 +211,13 @@ const Dashboard = () => {
                                                 value={globalPreferences?.userProvider || "gemini"}
                                                 onChange={(e) => {
                                                     const newProvider = e.target.value;
-                                                    const defaultModel = newProvider === "groq" ? "llama3-70b-8192" : "gemini-2.0-flash-lite-001";
+                                                    let defaultModel = "gemini-1.5-flash";
+
+                                                    // Set best default model for each provider
+                                                    if (newProvider === "groq") defaultModel = "llama-3.3-70b-versatile";
+                                                    if (newProvider === "huggingface") defaultModel = "Qwen/Qwen2.5-72B-Instruct";
+                                                    if (newProvider === "cohere") defaultModel = "command-r-plus";
+
                                                     setGlobalPreferences(prev => ({
                                                         ...prev,
                                                         userProvider: newProvider,
@@ -220,8 +226,10 @@ const Dashboard = () => {
                                                 }}
                                                 className="w-full bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-cyan-400 font-bold focus:outline-none focus:border-cyan-500/50"
                                             >
-                                                <option value="gemini">Google Gemini (Multimodal & Free Tier)</option>
-                                                <option value="groq">Groq Cloud (Ultra Fast Llama 3 - Free Beta)</option>
+                                                <option value="gemini">Google Gemini (Gratis & Multimodal)</option>
+                                                <option value="groq">Groq Cloud (Ultra Rápido - Llama 3)</option>
+                                                <option value="huggingface">Hugging Face (Open Source - Illimitado*)</option>
+                                                <option value="cohere">Cohere (Enterprise Grade - Trial)</option>
                                             </select>
                                         </div>
 
@@ -232,43 +240,70 @@ const Dashboard = () => {
                                                     type="password"
                                                     value={globalPreferences?.userApiKey || ""}
                                                     onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userApiKey: e.target.value }))}
-                                                    placeholder={globalPreferences?.userProvider === 'groq' ? "gsk_..." : "AIzaSy..."}
+                                                    placeholder={globalPreferences?.userProvider === 'groq' ? "gsk_..." : (globalPreferences?.userProvider === 'huggingface' ? "hf_..." : "AIzaSy...")}
                                                     className="flex-1 bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono"
                                                 />
                                             </div>
                                             <p className="text-[11px] text-gray-500">
                                                 ¿No tienes clave?{" "}
                                                 <a
-                                                    href={globalPreferences?.userProvider === 'groq' ? "https://console.groq.com/keys" : "https://aistudio.google.com/app/apikey"}
+                                                    href={
+                                                        globalPreferences?.userProvider === 'groq' ? "https://console.groq.com/keys" :
+                                                            (globalPreferences?.userProvider === 'huggingface' ? "https://huggingface.co/settings/tokens" :
+                                                                (globalPreferences?.userProvider === 'cohere' ? "https://dashboard.cohere.com/api-keys" :
+                                                                    "https://aistudio.google.com/app/apikey"))
+                                                    }
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className="text-cyan-400 hover:underline"
                                                 >
-                                                    Consíguela GRATIS aquí ({globalPreferences?.userProvider === 'groq' ? "Groq" : "Google"})
-                                                </a>. Se guarda localmente.
+                                                    Consíguela GRATIS aquí ({globalPreferences?.userProvider?.toUpperCase() || "GOOGLE"})
+                                                </a>.
                                             </p>
                                         </div>
 
                                         <div>
                                             <label className="text-xs font-bold text-gray-400 mb-1.5 block">Modelo de IA</label>
                                             <select
-                                                value={globalPreferences?.userModel || "gemini-2.0-flash-lite-001"}
+                                                value={globalPreferences?.userModel || "gemini-1.5-flash"}
                                                 onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userModel: e.target.value }))}
                                                 className="w-full bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-cyan-500/50"
                                             >
-                                                {globalPreferences?.userProvider === 'groq' ? (
+                                                {/* GEMINI MODELS */}
+                                                {(!globalPreferences?.userProvider || globalPreferences?.userProvider === 'gemini') && (
                                                     <>
-                                                        <option value="llama3-70b-8192">Llama 3 70B (Muy Inteligente)</option>
-                                                        <option value="llama3-8b-8192">Llama 3 8B (Súper Rápido)</option>
-                                                        <option value="mixtral-8x7b-32768">Mixtral 8x7B (Balanceado)</option>
-                                                        <option value="gemma-7b-it">Gemma 7B IT (Google on Groq)</option>
+                                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Estándar & Gratis)</option>
+                                                        <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Preview)</option>
+                                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más Inteligente)</option>
                                                     </>
-                                                ) : (
+                                                )}
+
+                                                {/* GROQ MODELS (Updated 2025) */}
+                                                {globalPreferences?.userProvider === 'groq' && (
                                                     <>
-                                                        <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Recomendado)</option>
-                                                        <option value="gemini-2.0-flash">Gemini 2.0 Flash (Potente)</option>
-                                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Estándar)</option>
-                                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más Capaz / Lento)</option>
+                                                        <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Recomendado)</option>
+                                                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (Velocidad Extrema)</option>
+                                                        <option value="mixtral-8x7b-32768">Mixtral 8x7B (Balanceado)</option>
+                                                        <option value="gemma2-9b-it">Gemma 2 9B (Google on Groq)</option>
+                                                    </>
+                                                )}
+
+                                                {/* HUGGING FACE MODELS */}
+                                                {globalPreferences?.userProvider === 'huggingface' && (
+                                                    <>
+                                                        <option value="Qwen/Qwen2.5-72B-Instruct">Qwen 2.5 72B (Muy Potente)</option>
+                                                        <option value="mistralai/Mistral-7B-Instruct-v0.3">Mistral 7B v0.3 (Estándar)</option>
+                                                        <option value="microsoft/Phi-3.5-mini-instruct">Phi 3.5 Mini (Muy Rápido)</option>
+                                                        <option value="meta-llama/Meta-Llama-3-8B-Instruct">Llama 3 8B (Classic)</option>
+                                                    </>
+                                                )}
+
+                                                {/* COHERE MODELS */}
+                                                {globalPreferences?.userProvider === 'cohere' && (
+                                                    <>
+                                                        <option value="command-r-plus">Command R+ (Súper Inteligente)</option>
+                                                        <option value="command-r">Command R (Optimizado RAG)</option>
+                                                        <option value="command-light">Command Light (Rápido)</option>
                                                     </>
                                                 )}
                                             </select>
