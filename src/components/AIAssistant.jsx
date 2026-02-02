@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, Sparkles, X, Wand2, Send, Copy, HelpCircle } from 'lucide-react';
+import { Mic, MicOff, Sparkles, X, Wand2, Send, Copy, HelpCircle, Loader2 } from 'lucide-react';
 import { useProjects } from '../context/ProjectContext';
+import { generateAIResponse } from '../lib/ai';
 import { cn } from '../utils';
 
 const AIAssistant = () => {
@@ -9,17 +10,15 @@ const AIAssistant = () => {
         setIsListening,
         transcript,
         setTranscript,
-        processCommand,
         setLastCommandResponse,
         lastCommandResponse,
         globalPreferences,
-        setGlobalPreferences
+        projects
     } = useProjects();
 
     const [manualInput, setManualInput] = useState('');
     const [isExpanded, setIsExpanded] = useState(false);
-    const [view, setActiveView] = useState('console'); // 'console' | 'settings'
-    const [showHelp, setShowHelp] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const recognitionRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -45,14 +44,10 @@ const AIAssistant = () => {
                 const current = event.resultIndex;
                 const transcriptText = event.results[current][0].transcript;
                 setTranscript(transcriptText);
-                if (event.results[current].isFinal) {
-                    processCommand(transcriptText); // Auto-execute if voice? Or waiting for confirmation?
-                    // Currently keeping auto-execute for voice legacy, but updating input for visuals
-                }
             };
             recognitionRef.current = recognition;
         }
-    }, [setIsListening, setTranscript, processCommand]);
+    }, [setIsListening, setTranscript]);
 
     const toggleListening = () => {
         if (isListening) {
@@ -69,7 +64,6 @@ const AIAssistant = () => {
     const handleMagicWand = () => {
         if (!manualInput.trim()) return;
 
-        // Simplified Logic: Improve structure without exposing System Metadata (handled by backend now)
         const polished = `Tarea: Análisis Experto
 Consulta: "${manualInput}"
 
@@ -80,10 +74,23 @@ Requisitos:
         setManualInput(polished);
     };
 
-    const handleSend = () => {
-        if (!manualInput.trim()) return;
-        const response = processCommand(manualInput);
-        setLastCommandResponse(response);
+    const handleSend = async () => {
+        if (!manualInput.trim() || isLoading) return;
+
+        setIsLoading(true);
+        setLastCommandResponse("⏳ Procesando...");
+
+        try {
+            // Build context from projects
+            const projectContext = projects.map(p => `- ${p.title}: ${p.tasks?.length || 0} tareas`).join('\n');
+
+            const result = await generateAIResponse(manualInput, projectContext, "General");
+            setLastCommandResponse(result.text || "Sin respuesta");
+        } catch (error) {
+            setLastCommandResponse(`❌ Error: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const copyToClipboard = () => {
@@ -157,10 +164,11 @@ Requisitos:
 
                                 <button
                                     onClick={handleSend}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-bold border border-cyan-500/20 transition-all ml-auto"
+                                    disabled={isLoading}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-bold border border-cyan-500/20 transition-all ml-auto disabled:opacity-50"
                                 >
-                                    <Send size={14} />
-                                    <span>Ejecutar</span>
+                                    {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                    <span>{isLoading ? 'Procesando...' : 'Ejecutar'}</span>
                                 </button>
                             </div>
                         </div>
