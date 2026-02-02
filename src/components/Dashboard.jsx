@@ -158,37 +158,37 @@ const Dashboard = () => {
                 </div>
 
                 {(activeView === 'overview' || activeView === 'projects') && (
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={projects.map(p => p.id)} strategy={rectSortingStrategy}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {projects
-                                    .filter(p => activeView === 'projects' ? p.category === 'IA' : true)
-                                    .map((pillar) => (
-                                        <SortableProjectCard
-                                            key={pillar.id}
-                                            project={pillar}
-                                            onEdit={handleEdit}
-                                            onDelete={deleteProject}
-                                            isSelected={selectedProjects.includes(pillar.id)}
-                                            onToggleSelect={() => toggleSelection(pillar.id)}
-                                        />
-                                    ))}
+                    // <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    //     <SortableContext items={projects.map(p => p.id)} strategy={rectSortingStrategy}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {projects
+                            .filter(p => activeView === 'projects' ? p.category === 'IA' : true)
+                            .map((pillar) => (
+                                <SortableProjectCard
+                                    key={pillar.id}
+                                    project={pillar}
+                                    onEdit={handleEdit}
+                                    onDelete={deleteProject}
+                                    isSelected={selectedProjects.includes(pillar.id)}
+                                    onToggleSelect={() => toggleSelection(pillar.id)}
+                                />
+                            ))}
 
-                                <button
-                                    onClick={handleCreateNew}
-                                    className={cn(
-                                        "group flex flex-col items-center justify-center h-full min-h-[200px] rounded-xl border-2 border-dashed border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all duration-300",
-                                        selectedProjects.length > 0 && "opacity-50 pointer-events-none"
-                                    )}
-                                >
-                                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-cyan-500 group-hover:text-black transition-colors mb-3">
-                                        <Plus size={24} />
-                                    </div>
-                                    <span className="text-sm font-bold text-gray-500 group-hover:text-cyan-400">Crear Nuevo Pilar</span>
-                                </button>
+                        <button
+                            onClick={handleCreateNew}
+                            className={cn(
+                                "group flex flex-col items-center justify-center h-full min-h-[200px] rounded-xl border-2 border-dashed border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all duration-300",
+                                selectedProjects.length > 0 && "opacity-50 pointer-events-none"
+                            )}
+                        >
+                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-cyan-500 group-hover:text-black transition-colors mb-3">
+                                <Plus size={24} />
                             </div>
-                        </SortableContext>
-                    </DndContext>
+                            <span className="text-sm font-bold text-gray-500 group-hover:text-cyan-400">Crear Nuevo Pilar</span>
+                        </button>
+                    </div>
+                    //     </SortableContext>
+                    // </DndContext>
                 )}
 
                 {activeView === 'settings' && (
