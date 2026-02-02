@@ -36,15 +36,23 @@ export default async function handler(req, res) {
                 temperature: 0.7
             };
         } else if (provider === 'huggingface') {
-            // Reverting to standard Inference API URL but keeping v1/chat structure
-            // The router.huggingface.co URL is often for dedicated endpoints requiring extra permissions.
-            // Public free tier should use the standard domain.
-            url = `https://api-inference.huggingface.co/models/${modelName}/v1/chat/completions`;
+            // FIX strategy: The v1/chat/completions endpoint on the free tier is unstable/deprecated.
+            // We switch to the RAW INFERENCE strategy.
+            url = `https://api-inference.huggingface.co/models/${modelName}`;
+
+            // Manually construct the prompt from messages
+            const systemMsg = messages.find(m => m.role === 'system')?.content || "";
+            const userMsg = messages.find(m => m.role === 'user')?.content || "";
+            // Use a generic chat format usually understood by instruction-tuned models
+            const fullPrompt = `${systemMsg ? "System: " + systemMsg + "\n" : ""}User: ${userMsg}\nAssistant:`;
+
             requestBody = {
-                messages,
-                max_tokens: 1024,
-                temperature: 0.7,
-                stream: false
+                inputs: fullPrompt,
+                parameters: {
+                    max_new_tokens: 1024,
+                    temperature: 0.7,
+                    return_full_text: false
+                }
             };
         } else if (provider === 'cohere') {
             url = "https://api.cohere.ai/v1/chat";
@@ -77,6 +85,18 @@ export default async function handler(req, res) {
         }
 
         const data = await response.json();
+
+        // Normalize Hugging Face Raw Response
+        if (provider === 'huggingface' && Array.isArray(data)) {
+            return res.status(200).json({
+                choices: [{
+                    message: {
+                        content: data[0]?.generated_text || ""
+                    }
+                }]
+            });
+        }
+
         return res.status(200).json(data);
 
     } catch (error) {
