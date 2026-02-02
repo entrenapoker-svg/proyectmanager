@@ -6,7 +6,6 @@ import Login from './pages/Login';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import Dashboard from './components/Dashboard';
-import MentalGym from './pages/MentalGym';
 import AIAssistant from './components/AIAssistant';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import LandingPage from './pages/LandingPage';
@@ -59,18 +58,12 @@ function App() {
                 </PrivateRoute>
               } />
 
-              <Route path="/" element={
+              <Route path="/" element={<LandingPage />} />
+
+              <Route path="/app" element={
                 <PrivateRoute>
                   <Layout>
                     <Dashboard />
-                  </Layout>
-                </PrivateRoute>
-              } />
-
-              <Route path="/gym" element={
-                <PrivateRoute>
-                  <Layout>
-                    <MentalGym />
                   </Layout>
                 </PrivateRoute>
               } />

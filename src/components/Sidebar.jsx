@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Grid, CheckSquare, Settings, User, LogOut, Brain, HelpCircle, ShieldCheck } from 'lucide-react';
+import { Home, Grid, CheckSquare, Settings, User, LogOut, HelpCircle, ShieldCheck } from 'lucide-react';
 import { cn } from '../utils';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -73,8 +73,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <NavItem
                         icon={Home}
                         label="Overview"
-                        active={activeView === 'overview' && location.pathname === '/'}
-                        onClick={() => { navigate('/'); handleNavClick('overview'); }}
+                        active={activeView === 'overview' && location.pathname === '/app'}
+                        onClick={() => { navigate('/app'); handleNavClick('overview'); }}
                     />
                     <NavItem
                         icon={Grid}
@@ -92,15 +92,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mt-6 mb-2">Acción</p>
                     <NavItem icon={CheckSquare} label="Tareas para Hoy" highlight onClick={handleActionClick} />
 
-                    <div className="mt-6 px-0">
-                        <NavItem
-                            icon={Brain}
-                            label="Gimnasio Mental"
-                            active={location.pathname === '/gym'}
-                            highlight
-                            onClick={() => navigate('/gym')}
-                        />
-                    </div>
+
 
                     <div className="mt-2 px-0">
                         <NavItem

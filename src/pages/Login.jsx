@@ -23,7 +23,7 @@ export default function Login() {
                 alert('¡Registro exitoso! Revisa tu email para confirmar (o inicia sesión si el auto-confirm está activo).');
             } else {
                 await signIn(email, password);
-                navigate('/');
+                navigate('/app');
             }
         } catch (err) {
             setError(err.message);
