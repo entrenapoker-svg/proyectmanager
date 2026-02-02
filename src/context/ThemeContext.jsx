@@ -17,14 +17,14 @@ export const themes = {
         accent: 'cyan',
     },
     light: {
-        name: 'Light Mode',
-        bg: 'bg-[#f0f2f5]', // Softer gray-blue background
-        bgSecondary: 'bg-white',
-        bgTertiary: 'bg-[#f8f9fa]',
-        text: 'text-slate-800', // Softer dark text
-        textSecondary: 'text-slate-500',
-        border: 'border-slate-200',
-        borderHover: 'hover:border-slate-300',
+        name: 'Soft Gray', // Renamed to reflect change
+        bg: 'bg-[#e2e4e8]', // Much darker gray background
+        bgSecondary: 'bg-[#f1f3f5]', // Off-white containers, not pure white
+        bgTertiary: 'bg-[#e9ecef]',
+        text: 'text-[#2c3e50]', // Dark slate text
+        textSecondary: 'text-[#5f6c7b]',
+        border: 'border-[#cbd5e1]', // Distinct borders
+        borderHover: 'hover:border-[#94a3b8]',
         accent: 'indigo',
     },
     minimal: {
