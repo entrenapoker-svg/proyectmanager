@@ -239,7 +239,13 @@ export const ProjectProvider = ({ children }) => {
                     .from('tasks')
                     .upsert(tasksToUpsert);
 
-                if (taskError) throw taskError;
+                if (taskError) {
+                    console.error("CRITICAL: Task Upsert Failed", taskError);
+                    alert("Error guardando tareas en DB: " + taskError.message);
+                    throw taskError;
+                } else {
+                    console.log("Task Upsert Success", tasksToUpsert);
+                }
 
                 // B. Delete tasks logic (DISABLED TEMPORARILY FOR SAFETY)
                 // The user reported tasks disappearing. The ID comparison might be failing (Type mismatch?).
