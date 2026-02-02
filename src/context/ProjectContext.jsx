@@ -194,10 +194,11 @@ export const ProjectProvider = ({ children }) => {
     };
 
     const updateProject = async (id, updatedData) => {
+        // Optimistic UI Update
         setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
 
         try {
-            // Filter strictly for DB columns
+            // 1. Update Project Table Columns
             const dbUpdate = {};
             if (updatedData.title !== undefined) dbUpdate.title = updatedData.title;
             if (updatedData.color !== undefined) dbUpdate.color = updatedData.color;
@@ -213,9 +214,48 @@ export const ProjectProvider = ({ children }) => {
 
                 if (error) throw error;
             }
+
+            // 2. Update Tasks if provided (Fix for disappearing tasks)
+            if (updatedData.tasks && Array.isArray(updatedData.tasks)) {
+                // Determine current tasks on server to know what to delete
+                const { data: currentDbTasks } = await supabase
+                    .from('tasks')
+                    .select('id')
+                    .eq('project_id', id);
+
+                const currentIds = currentDbTasks ? currentDbTasks.map(t => t.id) : [];
+                const incomingIds = updatedData.tasks.filter(t => t.id && typeof t.id === 'string').map(t => t.id); // Assuming DB IDs are UUIDs/strings. If local timestamp, it's new.
+
+                // A. Upsert (Update existing + Insert new)
+                const tasksToUpsert = updatedData.tasks.map(t => ({
+                    id: (t.id && typeof t.id === 'string') ? t.id : undefined, // Let DB generate ID if it's a temp timestamp
+                    project_id: id,
+                    text: t.text,
+                    done: t.done || false,
+                    details: t.details || ""
+                }));
+
+                const { error: taskError } = await supabase
+                    .from('tasks')
+                    .upsert(tasksToUpsert);
+
+                if (taskError) throw taskError;
+
+                // B. Delete tasks that are no longer in the list (if we trust this is a full sync)
+                // ProjectModal sends the full authoritative list.
+                // We compare against current DB IDs.
+                // NOTE: Local ID is numeric timestamp, DB ID is usually UUID/Int. 
+                // If we assume the Modal preserves the real DB ID for existing tasks:
+                const idsToDelete = currentIds.filter(dbId => !incomingIds.includes(dbId));
+
+                if (idsToDelete.length > 0) {
+                    await supabase.from('tasks').delete().in('id', idsToDelete);
+                }
+            }
+
         } catch (error) {
             console.error("Error updating project:", error);
-            alert("Error al actualizar: " + error.message);
+            // Revert or re-fetch on error
             fetchProjects();
         }
     };

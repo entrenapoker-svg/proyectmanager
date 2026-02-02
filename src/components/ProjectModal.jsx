@@ -328,7 +328,7 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
                                     title="Mejorar con IA (Varita Mágica)"
                                 >
                                     <Wand2 size={12} className="group-hover:rotate-12 transition-transform" />
-                                    Magic Enhance
+                                    Mejorar con IA
                                 </button>
                             </div>
 
@@ -427,8 +427,8 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
                     </div>
 
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
