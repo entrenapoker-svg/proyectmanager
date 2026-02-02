@@ -234,16 +234,56 @@ const Dashboard = () => {
                                         </div>
 
                                         <div>
-                                            <label className="text-xs font-bold text-gray-400 mb-1.5 block">Tu API Key Personal</label>
+                                            <label className="text-xs font-bold text-gray-400 mb-1.5 flex justify-between">
+                                                <span>Tu API Key Personal</span>
+                                                {globalPreferences?.userApiKey && (
+                                                    <span
+                                                        className="text-xs text-red-400 cursor-pointer hover:underline"
+                                                        onClick={() => setGlobalPreferences(prev => ({ ...prev, userApiKey: "" }))}
+                                                    >
+                                                        Borrar
+                                                    </span>
+                                                )}
+                                            </label>
                                             <div className="flex gap-2 mb-2">
                                                 <input
                                                     type="password"
                                                     value={globalPreferences?.userApiKey || ""}
                                                     onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userApiKey: e.target.value }))}
                                                     placeholder={globalPreferences?.userProvider === 'groq' ? "gsk_..." : (globalPreferences?.userProvider === 'huggingface' ? "hf_..." : "AIzaSy...")}
-                                                    className="flex-1 bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono"
+                                                    className={cn(
+                                                        "flex-1 bg-[#1A1A1C] border rounded-lg px-3 py-2 text-sm text-white focus:outline-none font-mono",
+                                                        // Validation logic for border color
+                                                        (() => {
+                                                            const key = globalPreferences?.userApiKey || "";
+                                                            const provider = globalPreferences?.userProvider || "gemini";
+                                                            if (key.length < 5) return "border-white/10 focus:border-cyan-500/50";
+
+                                                            if (provider === 'gemini' && !key.startsWith('AIza')) return "border-red-500/50 text-red-200";
+                                                            if (provider === 'groq' && !key.startsWith('gsk_')) return "border-red-500/50 text-red-200";
+                                                            if (provider === 'huggingface' && !key.startsWith('hf_')) return "border-red-500/50 text-red-200";
+
+                                                            return "border-emerald-500/30 text-emerald-200";
+                                                        })()
+                                                    )}
                                                 />
                                             </div>
+
+                                            {/* Validation Message */}
+                                            {(() => {
+                                                const key = globalPreferences?.userApiKey || "";
+                                                const provider = globalPreferences?.userProvider || "gemini";
+                                                if (key.length > 5) {
+                                                    if (provider === 'groq' && !key.startsWith('gsk_')) {
+                                                        return <p className="text-[11px] text-red-400 mb-1">⚠️ Esa parece una clave de Google. Las de Groq empiezan por <b>gsk_</b></p>;
+                                                    }
+                                                    if (provider === 'gemini' && !key.startsWith('AIza')) {
+                                                        return <p className="text-[11px] text-red-400 mb-1">⚠️ Esa no parece una clave de Google (AIza...)</p>;
+                                                    }
+                                                }
+                                                return null;
+                                            })()}
+
                                             <p className="text-[11px] text-gray-500">
                                                 ¿No tienes clave?{" "}
                                                 <a
@@ -272,9 +312,9 @@ const Dashboard = () => {
                                                 {/* GEMINI MODELS */}
                                                 {(!globalPreferences?.userProvider || globalPreferences?.userProvider === 'gemini') && (
                                                     <>
-                                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Estándar & Gratis)</option>
-                                                        <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Preview)</option>
-                                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más Inteligente)</option>
+                                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (RECOMENDADO)</option>
+                                                        <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Experimental)</option>
+                                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más Potente)</option>
                                                     </>
                                                 )}
 

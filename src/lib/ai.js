@@ -32,41 +32,51 @@ const generateGroqResponse = async (apiKey, modelName, messages) => {
 // --- HUGGING FACE API HELPER ---
 const generateHuggingFaceResponse = async (apiKey, modelName, messages) => {
     try {
-        // HF Inference API usually takes a simple prompt string for some models, or messages for chat models.
-        // We will use the v1/chat/completions compatible endpoint if available, but standard Inference API is more reliable for free tier.
-        // Let's use the standard Inference API with a simple prompt construction.
-
-        const systemMsg = messages.find(m => m.role === 'system')?.content || "";
-        const userMsg = messages.find(m => m.role === 'user')?.content || "";
-        const fullPrompt = `<|system|>\n${systemMsg}\n<|user|>\n${userMsg}\n<|assistant|>\n`;
-
-        const response = await fetch(`https://api-inference.huggingface.co/models/${modelName}`, {
+        // Use the strictly standardized v1/chat/completions endpoint supported by TGI and Inference API
+        const response = await fetch(`https://api-inference.huggingface.co/models/${modelName}/v1/chat/completions`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${apiKey}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                inputs: fullPrompt,
-                parameters: {
-                    max_new_tokens: 1024,
-                    temperature: 0.7,
-                    return_full_text: false
-                }
+                messages: messages, // Send standard messages array
+                max_tokens: 1024,
+                temperature: 0.7,
+                stream: false
             })
         });
 
         if (!response.ok) {
             const errorText = await response.text();
+
+            // Fallback: If chat/completions not supported (404), try legacy raw prompt
+            if (response.status === 404) {
+                return await generateHuggingFaceLegacyResponse(apiKey, modelName, messages);
+            }
             throw new Error(`HuggingFace API Error: ${errorText}`);
         }
 
         const data = await response.json();
-        // HF returns array of objects, usually [{ generated_text: "..." }]
-        return Array.isArray(data) ? data[0]?.generated_text : data?.generated_text || "";
+        return data.choices[0]?.message?.content || "";
     } catch (error) {
         throw error;
     }
+};
+
+// Fallback for older models on HF
+const generateHuggingFaceLegacyResponse = async (apiKey, modelName, messages) => {
+    const systemMsg = messages.find(m => m.role === 'system')?.content || "";
+    const userMsg = messages.find(m => m.role === 'user')?.content || "";
+    const fullPrompt = `System: ${systemMsg}\nUser: ${userMsg}\nAssistant:`;
+
+    const response = await fetch(`https://api-inference.huggingface.co/models/${modelName}`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ inputs: fullPrompt, parameters: { max_new_tokens: 1024 } })
+    });
+    const data = await response.json();
+    return Array.isArray(data) ? data[0]?.generated_text : data?.generated_text || "";
 };
 
 // --- COHERE API HELPER ---
