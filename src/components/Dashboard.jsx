@@ -11,7 +11,7 @@ import { testConnection } from '../lib/ai';
 import { useTheme } from '../context/ThemeContext';
 
 const Dashboard = () => {
-    const { projects, reorderProjects, addProject, updateProject, deleteProject, generateDailyPlan, processCommand, activeView, globalPreferences, setGlobalPreferences } = useProjects();
+    const { projects, reorderProjects, addProject, updateProject, deleteProject, generateDailyPlan, processCommand, activeView, globalPreferences, setGlobalPreferences, currentCategoryFilter } = useProjects();
     const { currentTheme, setCurrentTheme, themes, theme } = useTheme();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
@@ -163,7 +163,7 @@ const Dashboard = () => {
                 {(activeView === 'overview' || activeView === 'projects') && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {projects
-                            .filter(p => activeView === 'projects' ? p.category === 'IA' : true)
+                            .filter(p => activeView === 'projects' ? (currentCategoryFilter === 'All' ? true : p.category === currentCategoryFilter) : true)
                             .map((pillar) => (
                                 <SortableProjectCard
                                     key={pillar.id}

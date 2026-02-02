@@ -227,17 +227,22 @@ const ProjectModal = ({ isOpen, onClose, project, onSave, onDelete }) => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs uppercase text-gray-500 font-bold mb-1">Categoría</label>
-                                    <select
+                                    <input
+                                        list="categories-list"
+                                        type="text"
                                         name="category"
                                         value={formData.category}
                                         onChange={handleChange}
-                                        className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white focus:border-cyan-500 focus:outline-none"
-                                    >
-                                        <option value="IA">IA</option>
-                                        <option value="Finanzas">Finanzas</option>
-                                        <option value="Creatividad">Creatividad</option>
-                                        <option value="Salud">Salud</option>
-                                    </select>
+                                        className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white focus:border-cyan-500 focus:outline-none placeholder-gray-700"
+                                        placeholder="Nueva categoría..."
+                                    />
+                                    <datalist id="categories-list">
+                                        <option value="IA" />
+                                        <option value="Finanzas" />
+                                        <option value="Creatividad" />
+                                        <option value="Salud" />
+                                        <option value="Trabajo" />
+                                    </datalist>
                                 </div>
                                 <div>
                                     <label className="block text-xs uppercase text-gray-500 font-bold mb-1">Color</label>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Grid, CheckSquare, Settings, User, LogOut, HelpCircle, ShieldCheck } from 'lucide-react';
+import { Home, Grid, CheckSquare, Settings, User, LogOut, HelpCircle, ShieldCheck, Folder, Layers } from 'lucide-react';
 import { cn } from '../utils';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { useProjects } from '../context/ProjectContext';
 import { useTheme } from '../context/ThemeContext';
 
 const Sidebar = ({ isOpen, onClose }) => {
-    const { generateDailyPlan, activeView, setActiveView } = useProjects();
+    const { generateDailyPlan, activeView, setActiveView, categories, currentCategoryFilter, setCurrentCategoryFilter } = useProjects();
     const { theme } = useTheme();
     const { signOut } = useAuth();
     const navigate = useNavigate();
@@ -74,16 +74,38 @@ const Sidebar = ({ isOpen, onClose }) => {
                         icon={Home}
                         label="Overview"
                         active={activeView === 'overview' && location.pathname === '/app'}
-                        onClick={() => { navigate('/app'); handleNavClick('overview'); }}
+                        onClick={() => { navigate('/app'); setActiveView('overview'); setCurrentCategoryFilter('All'); handleNavClick('overview'); }}
                         theme={theme}
                     />
-                    <NavItem
-                        icon={Grid}
-                        label="Proyectos (IA)"
-                        active={activeView === 'projects'}
-                        onClick={() => handleNavClick('projects')}
-                        theme={theme}
-                    />
+
+                    <p className={`text-[10px] font-bold uppercase tracking-widest px-2 mt-4 mb-2 ${theme.textSecondary}`}>Categorías</p>
+
+                    {categories.length > 0 ? (
+                        categories.map(cat => (
+                            <NavItem
+                                key={cat}
+                                icon={cat === 'IA' ? Grid : Folder}
+                                label={cat}
+                                active={activeView === 'projects' && currentCategoryFilter === cat}
+                                onClick={() => {
+                                    handleNavClick('projects');
+                                    setCurrentCategoryFilter(cat);
+                                }}
+                                theme={theme}
+                            />
+                        ))
+                    ) : (
+                        <NavItem
+                            icon={Grid}
+                            label="Proyectos"
+                            active={activeView === 'projects'}
+                            onClick={() => handleNavClick('projects')}
+                            theme={theme}
+                        />
+                    )}
+
+                    <div className="mt-4"></div>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest px-2 mt-6 mb-2 ${theme.textSecondary}`}>Sistema</p>
                     <NavItem
                         icon={Settings}
                         label="Configuración"

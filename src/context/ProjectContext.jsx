@@ -14,7 +14,8 @@ export const ProjectProvider = ({ children }) => {
     const [projects, setProjects] = useState([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
 
-    const [activeView, setActiveView] = useState('overview'); // 'overview', 'settings'
+    const [activeView, setActiveView] = useState('overview'); // 'overview', 'settings', 'projects'
+    const [currentCategoryFilter, setCurrentCategoryFilter] = useState('All'); // 'All', 'IA', 'Finanzas', etc.
 
     // Global Preferences (Layer 1) - Kept in LocalStorage for now
     const [globalPreferences, setGlobalPreferences] = useState(() => {
@@ -153,7 +154,8 @@ export const ProjectProvider = ({ children }) => {
             color: projectData.color || 'cyan',
             icon: projectData.icon || 'Cpu',
             importance: parseInt(projectData.importance) || 5,
-            ai_context: projectData.aiContext || ""
+            ai_context: projectData.aiContext || "",
+            category: projectData.category || "General"
         };
 
         try {
@@ -205,6 +207,7 @@ export const ProjectProvider = ({ children }) => {
             if (updatedData.icon !== undefined) dbUpdate.icon = updatedData.icon;
             if (updatedData.importance !== undefined) dbUpdate.importance = parseInt(updatedData.importance);
             if (updatedData.aiContext !== undefined) dbUpdate.ai_context = updatedData.aiContext;
+            if (updatedData.category !== undefined) dbUpdate.category = updatedData.category;
 
             if (Object.keys(dbUpdate).length > 0) {
                 const { error } = await supabase
@@ -511,7 +514,10 @@ export const ProjectProvider = ({ children }) => {
             setLastCommandResponse,
             activeView,
             setActiveView,
-            isLoadingData
+            currentCategoryFilter,
+            setCurrentCategoryFilter,
+            isLoadingData,
+            categories: [...new Set(projects.map(p => p.category || 'General'))].sort(), // Derive unique categories
         }}>
             {children}
         </ProjectContext.Provider>
