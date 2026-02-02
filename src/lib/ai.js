@@ -1,21 +1,56 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize Gemini API with Hardcoded Key (Hotfix)
+// --- GROQ API HELPER ---
+const generateGroqResponse = async (apiKey, modelName, messages) => {
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                messages: messages,
+                model: modelName,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Groq API Error: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0]?.message?.content || "";
+    } catch (error) {
+        throw error;
+    }
+};
+
+// --- MAIN AI HANDLER ---
 export const generateAIResponse = async (userMessage, context = "", projectTitle = "") => {
     try {
         // 1. Get User Preferences from LocalStorage
         let apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
         let modelName = "gemini-2.0-flash-lite-001";
+        let provider = "gemini"; // Default to Gemini
 
         try {
             const savedPrefs = localStorage.getItem('jama1_global_prefs');
             if (savedPrefs) {
                 const parsed = JSON.parse(savedPrefs);
+
+                if (parsed.userProvider) {
+                    provider = parsed.userProvider;
+                }
+
                 // Priority: User Custom Key > Env Key
-                if (parsed.userApiKey && parsed.userApiKey.trim().length > 20) {
+                if (parsed.userApiKey && parsed.userApiKey.trim().length > 10) {
                     apiKey = parsed.userApiKey.trim();
                 }
+
                 if (parsed.userModel) {
                     modelName = parsed.userModel;
                 }
@@ -24,35 +59,19 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
             console.error("Error reading local settings", e);
         }
 
-        // 2. SECURITY CHECK: Block known leaked keys or empty keys explicitly
-        const LEAKED_KEY_SIGNATURE = "AIzaSyBwU_AqBYBzO6b7LeawntlKIzxk2Y0mNhw"; // The leaked one
-
-        if (!apiKey || apiKey.length < 20) {
+        if (!apiKey) {
             return {
-                text: "⚠️ Falta la API Key. Ve a 'Configuración' en el menú izquierda y pega tu clave de Google Gemini (es gratis).",
+                text: "⚠️ Falta la API Key. Ve a 'Configuración' y añade tu clave.",
                 suggestions: ["Ir a Configuración"]
             };
         }
 
-        if (apiKey.includes(LEAKED_KEY_SIGNATURE) || apiKey.includes("YOUR_API_KEY")) {
-            return {
-                text: "⛔ ERROR DE SEGURIDAD: Estás usando una API Key que ha sido bloqueada por Google por filtrarse. Por favor, genera una NUEVA en Google AI Studio y pégala en Configuración.",
-                suggestions: ["Generar Nueva Key", "Ir a Configuración"]
-            };
-        }
+        console.log(`🤖 AI Request | Provider: ${provider} | Model: ${modelName}`);
 
-        console.log(`🤖 AI Request using Model: ${modelName} | Key ending in: ...${apiKey.slice(-4)}`);
-
-        // 3. Initialize Client Dynamically
-        const dynamicGenAI = new GoogleGenerativeAI(apiKey);
-        const model = dynamicGenAI.getGenerativeModel({ model: modelName });
-
-        const prompt = `
+        const systemPrompt = `
         ACT AS AN EXPERT PROJECT MANAGER.
         CONTEXT FOR PROJECT "${projectTitle}":
         ${context || "General tasks."}
-        
-        USER REQUEST: "${userMessage}"
         
         INSTRUCTIONS:
         1. Analyze based on context.
@@ -60,11 +79,28 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
         3. Be direct and concise.
         `;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        let text = "";
 
-        // Simple parsing logic
+        if (provider === 'groq') {
+            // --- GROQ EXECUTION ---
+            const messages = [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userMessage }
+            ];
+            text = await generateGroqResponse(apiKey, modelName, messages);
+
+        } else {
+            // --- GEMINI EXECUTION (Default) ---
+            const dynamicGenAI = new GoogleGenerativeAI(apiKey);
+            const model = dynamicGenAI.getGenerativeModel({ model: modelName });
+
+            const prompt = `${systemPrompt}\n\nUSER REQUEST: "${userMessage}"`;
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            text = response.text();
+        }
+
+        // Simple parsing logic for suggestions (shared)
         const suggestions = text.split('\n')
             .filter(line => line.trim().match(/^[-*1-9]/))
             .map(line => line.replace(/^[-*0-9.)]+/, '').trim())
@@ -78,14 +114,16 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
         // Default detailed error
         let errorMsg = `Error Técnico: ${error.message || error.toString()}`;
 
-        if (error.message.includes("403") || error.message.includes("leaked")) {
-            errorMsg = "⛔ TU API KEY ESTÁ BLOQUEADA O ES INCORRECTA. Google la rechazó (Error 403). Ve a Configuración y verifica que la copiaste bien.";
-        } else if (error.message.includes("429")) {
-            errorMsg = "⏳ Cuota excedida (Rate Limit). Google está limitando las peticiones. Espera un poco.";
-        } else if (error.message.includes("404")) {
-            errorMsg = "❌ Modelo no encontrado. El modelo seleccionado puede no estar disponible. Prueba 'gemini-1.5-flash' en Configuración.";
-        } else if (error.message.includes("API key not valid")) {
-            errorMsg = "🔑 La API Key no es válida. Asegúrate de haberla copiado completa (empieza por AIzaSy...).";
+        // Standardized Error Messages
+        const msgLow = errorMsg.toLowerCase();
+        if (msgLow.includes("403") || msgLow.includes("leaked") || msgLow.includes("permission denied")) {
+            errorMsg = "⛔ API Key Bloqueada o Incorrecta. Verifica tu clave en configuración.";
+        } else if (msgLow.includes("429") || msgLow.includes("quota") || msgLow.includes("rate limit")) {
+            errorMsg = "⏳ Cuota excedida (Rate Limit). El proveedor está limitando las peticiones. Espera un momento.";
+        } else if (msgLow.includes("404") || msgLow.includes("not found")) {
+            errorMsg = "❌ Modelo no encontrado. El modelo seleccionado puede no estar disponible.";
+        } else if (msgLow.includes("401") || msgLow.includes("unauthorized")) {
+            errorMsg = "🔑 API Key Inválida (401). Verifica que sea correcta para el proveedor seleccionado.";
         }
 
         return {
@@ -95,31 +133,35 @@ export const generateAIResponse = async (userMessage, context = "", projectTitle
     }
 };
 
-export const testConnection = async (apiKey, modelName = "gemini-2.0-flash-lite-001") => {
+export const testConnection = async (apiKey, modelName = "gemini-2.0-flash-lite-001", provider = "gemini") => {
     try {
-        console.log("Testing connection with key ending in:", apiKey?.slice(-4));
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: modelName });
+        console.log(`Testing connection | Provider: ${provider} | Key ending: ...${apiKey?.slice(-4)}`);
 
-        // Minimal token test
-        const result = await model.generateContent("Hello");
-        const response = await result.response;
-        // Access text safely
-        const text = response.text ? response.text() : "Success";
+        if (provider === 'groq') {
+            await generateGroqResponse(apiKey, modelName, [{ role: "user", content: "Hello" }]);
+            return { success: true, message: "Conexión con Groq Exitosa" };
+        } else {
+            // Gemini Test
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent("Hello");
+            const response = await result.response;
+            const text = response.text ? response.text() : "Success";
+            return { success: true, message: "Conexión con Gemini Exitosa" };
+        }
 
-        return { success: true, message: "Validada correctamente" };
     } catch (error) {
         console.error("Test Connection Exception:", error);
 
         let msg = error.message || "Error desconocido";
-        // Ensure string conversion
         msg = msg.toString();
+        const msgLow = msg.toLowerCase();
 
-        if (msg.includes("403") || msg.includes("leaked")) msg = "Key Bloqueada/Filtrada (403)";
-        if (msg.includes("429") || msg.includes("quota") || msg.includes("limit")) msg = "⏳ Límite de Cuota Excedido (429). Espera 1 min.";
-        if (msg.includes("400") || msg.includes("expired") || msg.includes("API key expired")) msg = "❌ Key Expirada/Inválida (400). Crea una nueva.";
-        if (msg.includes("404")) msg = "Modelo no disponible (404)";
-        if (msg.includes("fetch failed")) msg = "Error de Red / Conexión";
+        if (msgLow.includes("403") || msgLow.includes("leaked")) msg = "Key Bloqueada/Filtrada (403)";
+        if (msgLow.includes("429") || msgLow.includes("quota") || msgLow.includes("limit")) msg = "⏳ Límite de Cuota Excedido (429). Espera 1 min.";
+        if (msgLow.includes("401") || msgLow.includes("unauthorized") || msgLow.includes("invalid api key")) msg = "❌ Key Inválida (401).";
+        if (msgLow.includes("404")) msg = "Modelo no disponible (404)";
+        if (msgLow.includes("fetch failed")) msg = "Error de Red / Conexión";
 
         return { success: false, message: msg };
     }

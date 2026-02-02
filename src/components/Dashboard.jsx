@@ -67,16 +67,16 @@ const Dashboard = () => {
         }
     };
 
-    const handleTestConnection = async (apiKey, model) => {
+    const handleTestConnection = async (apiKey, model, provider = "gemini") => {
         const btn = document.getElementById('save-prefs-btn');
         const originalText = "Confirmar y Probar Configuración";
 
         if (btn) {
-            btn.innerText = "⏳ Verificando con Google...";
+            btn.innerText = "⏳ Verificando con " + (provider === 'groq' ? "Groq..." : "Google...");
             btn.disabled = true;
 
             try {
-                const result = await testConnection(apiKey, model);
+                const result = await testConnection(apiKey, model, provider);
                 console.log("Test Connection Result:", result);
 
                 if (result && result.success) {
@@ -201,9 +201,30 @@ const Dashboard = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div className="space-y-6">
                                 <section className="p-6 bg-black/20 rounded-xl border border-white/5">
-                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Conexión IA (Gemini)</h4>
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Conexión IA</h4>
 
                                     <div className="space-y-4">
+                                        {/* Provider Selector */}
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-400 mb-1.5 block">Proveedor de IA</label>
+                                            <select
+                                                value={globalPreferences?.userProvider || "gemini"}
+                                                onChange={(e) => {
+                                                    const newProvider = e.target.value;
+                                                    const defaultModel = newProvider === "groq" ? "llama3-70b-8192" : "gemini-2.0-flash-lite-001";
+                                                    setGlobalPreferences(prev => ({
+                                                        ...prev,
+                                                        userProvider: newProvider,
+                                                        userModel: defaultModel
+                                                    }));
+                                                }}
+                                                className="w-full bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-cyan-400 font-bold focus:outline-none focus:border-cyan-500/50"
+                                            >
+                                                <option value="gemini">Google Gemini (Multimodal & Free Tier)</option>
+                                                <option value="groq">Groq Cloud (Ultra Fast Llama 3 - Free Beta)</option>
+                                            </select>
+                                        </div>
+
                                         <div>
                                             <label className="text-xs font-bold text-gray-400 mb-1.5 block">Tu API Key Personal</label>
                                             <div className="flex gap-2 mb-2">
@@ -211,14 +232,19 @@ const Dashboard = () => {
                                                     type="password"
                                                     value={globalPreferences?.userApiKey || ""}
                                                     onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userApiKey: e.target.value }))}
-                                                    placeholder="AIzaSy..."
+                                                    placeholder={globalPreferences?.userProvider === 'groq' ? "gsk_..." : "AIzaSy..."}
                                                     className="flex-1 bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 font-mono"
                                                 />
                                             </div>
                                             <p className="text-[11px] text-gray-500">
                                                 ¿No tienes clave?{" "}
-                                                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">
-                                                    Consíguela GRATIS aquí
+                                                <a
+                                                    href={globalPreferences?.userProvider === 'groq' ? "https://console.groq.com/keys" : "https://aistudio.google.com/app/apikey"}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="text-cyan-400 hover:underline"
+                                                >
+                                                    Consíguela GRATIS aquí ({globalPreferences?.userProvider === 'groq' ? "Groq" : "Google"})
                                                 </a>. Se guarda localmente.
                                             </p>
                                         </div>
@@ -230,15 +256,31 @@ const Dashboard = () => {
                                                 onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userModel: e.target.value }))}
                                                 className="w-full bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-cyan-500/50"
                                             >
-                                                <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Recomendado)</option>
-                                                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Potente)</option>
-                                                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Estándar)</option>
+                                                {globalPreferences?.userProvider === 'groq' ? (
+                                                    <>
+                                                        <option value="llama3-70b-8192">Llama 3 70B (Muy Inteligente)</option>
+                                                        <option value="llama3-8b-8192">Llama 3 8B (Súper Rápido)</option>
+                                                        <option value="mixtral-8x7b-32768">Mixtral 8x7B (Balanceado)</option>
+                                                        <option value="gemma-7b-it">Gemma 7B IT (Google on Groq)</option>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <option value="gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite (Recomendado)</option>
+                                                        <option value="gemini-2.0-flash">Gemini 2.0 Flash (Potente)</option>
+                                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Estándar)</option>
+                                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más Capaz / Lento)</option>
+                                                    </>
+                                                )}
                                             </select>
                                         </div>
 
                                         <div className="pt-4">
                                             <button
-                                                onClick={() => handleTestConnection(globalPreferences?.userApiKey, globalPreferences?.userModel)}
+                                                onClick={() => handleTestConnection(
+                                                    globalPreferences?.userApiKey,
+                                                    globalPreferences?.userModel,
+                                                    globalPreferences?.userProvider || "gemini"
+                                                )}
                                                 id="save-prefs-btn"
                                                 className="w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2"
                                             >
