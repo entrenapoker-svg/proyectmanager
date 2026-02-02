@@ -5,15 +5,14 @@ import { SortableProjectCard } from './SortableProjectCard';
 import ProjectModal from './ProjectModal';
 import DailyPlanEditor from './DailyPlanEditor';
 import { useProjects } from '../context/ProjectContext';
-import { Plus, RefreshCw, CheckSquare, Settings, Trash2, X } from 'lucide-react';
+import { Plus, RefreshCw, CheckSquare, Settings, Trash2, X, Palette } from 'lucide-react';
 import { cn } from '../utils';
 import { testConnection } from '../lib/ai';
-import { useTheme } from '../context/ThemeContext'; // Import Theme Context
-import { Palette } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const Dashboard = () => {
     const { projects, reorderProjects, addProject, updateProject, deleteProject, generateDailyPlan, processCommand, activeView, globalPreferences, setGlobalPreferences } = useProjects();
-    const { currentTheme, setCurrentTheme, themes, theme } = useTheme(); // Use Theme
+    const { currentTheme, setCurrentTheme, themes, theme } = useTheme();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
     const [selectedProjects, setSelectedProjects] = useState([]);
@@ -98,20 +97,18 @@ const Dashboard = () => {
                         btn.innerText = "⏳ " + errorMsg;
                         btn.className = "w-full py-2 bg-amber-500/20 border border-amber-500/50 rounded-lg text-amber-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
                     } else {
-                        // Allow longer messages up to 50 chars (button is wide enough)
+                        // Allow longer messages up to 50 chars
                         btn.innerText = errorMsg.length > 50 ? "❌ Error (Ver Consola)" : ("❌ " + errorMsg);
                         btn.className = "w-full py-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 font-bold text-sm transition-all flex items-center justify-center gap-2";
                     }
 
-                    // Also show a temporary error div or toast if we had one. 
-                    // Let's fallback to console warning to avoid blocking UI
                     console.warn(errorMsg);
 
                     setTimeout(() => {
                         btn.innerText = originalText;
                         btn.disabled = false;
                         btn.className = "w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 font-bold text-sm hover:bg-cyan-500/20 transition-all flex items-center justify-center gap-2";
-                    }, 5000); // 5 seconds wait before resetting
+                    }, 5000);
                 }
             } catch (err) {
                 console.error("Dashboard Button Error:", err);
@@ -125,11 +122,14 @@ const Dashboard = () => {
     };
 
     return (
-        <main className="flex-1 p-4 md:p-8 min-h-full bg-[#0a0a0b] relative pb-32">
-            <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-                <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-cyan-500/5 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px]"></div>
-            </div>
+        <main className={`flex-1 p-4 md:p-8 min-h-full relative pb-32 transition-colors duration-300`}>
+            {/* Background Orbs only for Dark Mode */}
+            {currentTheme === 'dark' && (
+                <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+                    <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-cyan-500/5 rounded-full blur-[120px]"></div>
+                    <div className="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px]"></div>
+                </div>
+            )}
 
             <DailyPlanEditor />
 
@@ -141,7 +141,7 @@ const Dashboard = () => {
                 )}
 
                 <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-xl font-bold text-white tracking-tight">Active Pillars</h2>
+                    <h2 className={`text-xl font-bold tracking-tight ${theme.text}`}>Active Pillars</h2>
                     <div className="flex space-x-3">
                         <button
                             onClick={generateDailyPlan}
@@ -152,7 +152,7 @@ const Dashboard = () => {
                         </button>
                         <button
                             onClick={handleCreateNew}
-                            className="flex items-center space-x-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors text-sm font-bold text-cyan-400"
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-sm font-bold text-cyan-400 border ${theme.bgSecondary} ${theme.border} hover:bg-cyan-500/10`}
                         >
                             <Plus size={16} />
                             <span>Nuevo Proyecto</span>
@@ -161,8 +161,6 @@ const Dashboard = () => {
                 </div>
 
                 {(activeView === 'overview' || activeView === 'projects') && (
-                    // <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    //     <SortableContext items={projects.map(p => p.id)} strategy={rectSortingStrategy}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {projects
                             .filter(p => activeView === 'projects' ? p.category === 'IA' : true)
@@ -180,43 +178,39 @@ const Dashboard = () => {
                         <button
                             onClick={handleCreateNew}
                             className={cn(
-                                "group flex flex-col items-center justify-center h-full min-h-[200px] rounded-xl border-2 border-dashed border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all duration-300",
+                                `group flex flex-col items-center justify-center h-full min-h-[200px] rounded-xl border-2 border-dashed transition-all duration-300 ${theme.border} hover:border-cyan-500/50 hover:bg-cyan-500/5`,
                                 selectedProjects.length > 0 && "opacity-50 pointer-events-none"
                             )}
                         >
-                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-cyan-500 group-hover:text-black transition-colors mb-3">
-                                <Plus size={24} />
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center group-hover:bg-cyan-500 group-hover:text-black transition-colors mb-3 ${theme.bgSecondary}`}>
+                                <Plus size={24} className={theme.textSecondary} />
                             </div>
-                            <span className="text-sm font-bold text-gray-500 group-hover:text-cyan-400">Crear Nuevo Pilar</span>
+                            <span className={`text-sm font-bold group-hover:text-cyan-400 ${theme.textSecondary}`}>Crear Nuevo Pilar</span>
                         </button>
                     </div>
-                    //     </SortableContext>
-                    // </DndContext>
                 )}
 
                 {activeView === 'settings' && (
-                    <div className="w-full bg-[#121214] border border-white/5 rounded-2xl p-8 animate-fade-in-down">
-                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                    <div className={`w-full border rounded-2xl p-8 animate-fade-in-down ${theme.bgSecondary} ${theme.border}`}>
+                        <h3 className={`text-xl font-bold mb-6 flex items-center gap-3 ${theme.text}`}>
                             <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-400"><Settings size={20} /></div>
                             Configuración del Sistema
                         </h3>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div className="space-y-6">
-                                <section className="p-6 bg-black/20 rounded-xl border border-white/5">
-                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Conexión IA Multi-Proveedor</h4>
+                                <section className={`p-6 rounded-xl border ${theme.bgTertiary} ${theme.border}`}>
+                                    <h4 className={`text-sm font-bold uppercase tracking-wider mb-4 border-b pb-2 ${theme.textSecondary} ${theme.border}`}>Conexión IA Multi-Proveedor</h4>
 
                                     <div className="space-y-4">
                                         {/* Provider Selector */}
                                         <div>
-                                            <label className="text-xs font-bold text-gray-400 mb-1.5 block">Proveedor de IA</label>
+                                            <label className={`text-xs font-bold mb-1.5 block ${theme.textSecondary}`}>Proveedor de IA</label>
                                             <select
                                                 value={globalPreferences?.userProvider || "gemini"}
                                                 onChange={(e) => {
                                                     const newProvider = e.target.value;
                                                     let defaultModel = "gemini-1.5-flash";
-
-                                                    // Set best default model for each provider
                                                     if (newProvider === "groq") defaultModel = "llama-3.3-70b-versatile";
                                                     if (newProvider === "huggingface") defaultModel = "Qwen/Qwen2.5-72B-Instruct";
                                                     if (newProvider === "cohere") defaultModel = "command-r-plus";
@@ -227,7 +221,7 @@ const Dashboard = () => {
                                                         userModel: defaultModel
                                                     }));
                                                 }}
-                                                className="w-full bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-cyan-400 font-bold focus:outline-none focus:border-cyan-500/50"
+                                                className={`w-full border rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-cyan-500/50 ${theme.bg} ${theme.text} ${theme.border}`}
                                             >
                                                 <option value="gemini">Google Gemini (Gratis & Multimodal)</option>
                                                 <option value="groq">Groq Cloud (Ultra Rápido - Llama 3)</option>
@@ -237,7 +231,7 @@ const Dashboard = () => {
                                         </div>
 
                                         <div>
-                                            <label className="text-xs font-bold text-gray-400 mb-1.5 flex justify-between">
+                                            <label className={`text-xs font-bold mb-1.5 flex justify-between ${theme.textSecondary}`}>
                                                 <span>Tu API Key Personal</span>
                                                 {globalPreferences?.userApiKey && (
                                                     <span
@@ -255,62 +249,34 @@ const Dashboard = () => {
                                                     onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userApiKey: e.target.value }))}
                                                     placeholder={globalPreferences?.userProvider === 'groq' ? "gsk_..." : (globalPreferences?.userProvider === 'huggingface' ? "hf_..." : "AIzaSy...")}
                                                     className={cn(
-                                                        "flex-1 bg-[#1A1A1C] border rounded-lg px-3 py-2 text-sm text-white focus:outline-none font-mono",
+                                                        `flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none font-mono ${theme.bg} ${theme.text}`,
                                                         // Validation logic for border color
                                                         (() => {
                                                             const key = globalPreferences?.userApiKey || "";
                                                             const provider = globalPreferences?.userProvider || "gemini";
-                                                            if (key.length < 5) return "border-white/10 focus:border-cyan-500/50";
+                                                            if (key.length < 5) return `${theme.border} focus:border-cyan-500/50`;
 
-                                                            if (provider === 'gemini' && !key.startsWith('AIza')) return "border-red-500/50 text-red-200";
-                                                            if (provider === 'groq' && !key.startsWith('gsk_')) return "border-red-500/50 text-red-200";
-                                                            if (provider === 'huggingface' && !key.startsWith('hf_')) return "border-red-500/50 text-red-200";
+                                                            if (provider === 'gemini' && !key.startsWith('AIza')) return "border-red-500/50 text-red-400";
+                                                            if (provider === 'groq' && !key.startsWith('gsk_')) return "border-red-500/50 text-red-400";
+                                                            if (provider === 'huggingface' && !key.startsWith('hf_')) return "border-red-500/50 text-red-400";
 
-                                                            return "border-emerald-500/30 text-emerald-200";
+                                                            return "border-emerald-500/30 text-emerald-400";
                                                         })()
                                                     )}
                                                 />
                                             </div>
 
-                                            {/* Validation Message */}
-                                            {(() => {
-                                                const key = globalPreferences?.userApiKey || "";
-                                                const provider = globalPreferences?.userProvider || "gemini";
-                                                if (key.length > 5) {
-                                                    if (provider === 'groq' && !key.startsWith('gsk_')) {
-                                                        return <p className="text-[11px] text-red-400 mb-1">⚠️ Esa parece una clave de Google. Las de Groq empiezan por <b>gsk_</b></p>;
-                                                    }
-                                                    if (provider === 'gemini' && !key.startsWith('AIza')) {
-                                                        return <p className="text-[11px] text-red-400 mb-1">⚠️ Esa no parece una clave de Google (AIza...)</p>;
-                                                    }
-                                                }
-                                                return null;
-                                            })()}
-
-                                            <p className="text-[11px] text-gray-500">
-                                                ¿No tienes clave?{" "}
-                                                <a
-                                                    href={
-                                                        globalPreferences?.userProvider === 'groq' ? "https://console.groq.com/keys" :
-                                                            (globalPreferences?.userProvider === 'huggingface' ? "https://huggingface.co/settings/tokens" :
-                                                                (globalPreferences?.userProvider === 'cohere' ? "https://dashboard.cohere.com/api-keys" :
-                                                                    "https://aistudio.google.com/app/apikey"))
-                                                    }
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="text-cyan-400 hover:underline"
-                                                >
-                                                    Consíguela GRATIS aquí ({globalPreferences?.userProvider?.toUpperCase() || "GOOGLE"})
-                                                </a>.
+                                            <p className={`text-[10px] leading-relaxed ${theme.textSecondary}`}>
+                                                *Tu clave se guarda <strong>localmente</strong> en tu navegador.
                                             </p>
                                         </div>
 
                                         <div>
-                                            <label className="text-xs font-bold text-gray-400 mb-1.5 block">Modelo de IA</label>
+                                            <label className={`text-xs font-bold mb-1.5 block ${theme.textSecondary}`}>Modelo de IA</label>
                                             <select
                                                 value={globalPreferences?.userModel || "gemini-1.5-flash"}
                                                 onChange={(e) => setGlobalPreferences(prev => ({ ...prev, userModel: e.target.value }))}
-                                                className="w-full bg-[#1A1A1C] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-cyan-500/50"
+                                                className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500/50 ${theme.bg} ${theme.text} ${theme.border}`}
                                             >
                                                 {/* GEMINI MODELS */}
                                                 {(!globalPreferences?.userProvider || globalPreferences?.userProvider === 'gemini') && (
@@ -373,7 +339,7 @@ const Dashboard = () => {
                             <div className="space-y-6">
                                 {/* Visual Preferences Section */}
                                 <section className={`p-6 ${theme.bgTertiary} rounded-xl border ${theme.border}`}>
-                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-700/50 pb-2 flex items-center gap-2">
+                                    <h4 className={`text-sm font-bold uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2 ${theme.textSecondary} ${theme.border}`}>
                                         <Palette size={16} /> Apariencia
                                     </h4>
 
@@ -411,9 +377,8 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
-                )
-                }
-            </div >
+                )}
+            </div>
 
             <ProjectModal
                 isOpen={isModalOpen}
@@ -422,7 +387,7 @@ const Dashboard = () => {
                 onSave={handleSave}
                 onDelete={deleteProject}
             />
-        </main >
+        </main>
     );
 };
 
